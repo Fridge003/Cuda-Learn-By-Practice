@@ -21,9 +21,15 @@ void run_cublas_gemm(float* A, float* B, float* C, int m, int n, int k) {
 }
 
 void run_naive_gemm(float* A, float* B, float* C, int m, int n, int k) {
-    dim3 grid_size(CEIL_DIV(m, BLOCK_X), CEIL_DIV(n, BLOCK_Y), 1);   
-    dim3 block_size(BLOCK_X, BLOCK_Y, 1);
+    dim3 grid_size(CEIL_DIV(m, BLOCK_X), CEIL_DIV(n, BLOCK_Y));   
+    dim3 block_size(BLOCK_X, BLOCK_Y);
     naive_gemm_kernel<<<grid_size, block_size>>>(A, B, C, m, n, k);
+}
+
+void run_global_memory_coalescing_kernel(float* A, float* B, float* C, int m, int n, int k) {
+    dim3 grid_size(CEIL_DIV(m, BLOCK_X), CEIL_DIV(n, BLOCK_Y));   
+    dim3 block_size(BLOCK_X, BLOCK_Y);
+    global_memory_coalescing_gemm_kernel<<<grid_size, block_size>>>(A, B, C, m, n, k);
 }
 
 
@@ -39,6 +45,11 @@ bool run_kernel(float* A,
 
     if (kernel == "naive") {
         run_naive_gemm(A, B, C, m, n, k);
+        valid_kernel = true;
+    }
+
+    if (kernel == "global_memory_coalescing") {
+        run_global_memory_coalescing_kernel(A, B, C, m, n, k);
         valid_kernel = true;
     }
 
