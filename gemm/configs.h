@@ -16,8 +16,12 @@ const std::vector<int> k_list = {128, 256, 512, 1024, 2048};
 const std::vector<std::string> kernel_list = {"naive", "cublas"};
 
 // Parameters of V100 for PCIe
-const double device_fp32_compute_capacity_tflops = 14.0;
-const double device_global_mem_bandwidth_GB_per_sec = 900.0;
+// const double device_fp32_compute_capacity_tflops = 14.0;
+// const double device_global_mem_bandwidth_GB_per_sec = 900.0;
+
+// Parameters of V100S for PCIe
+const double device_fp32_compute_capacity_tflops = 16.4;
+const double device_global_mem_bandwidth_GB_per_sec = 1134.0;
 
 // Parameters of A100 for PCIe
 // const double device_fp32_compute_capacity_tflops = 19.5;
