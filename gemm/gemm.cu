@@ -1,23 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <vector>
-#include <string>
 #include <cassert>
 #include <cuda_runtime.h>
 
 #include "runner.cuh"
 #include "utils.cuh"
-
-const std::vector<int> m_list = {128, 256, 512, 1024, 2048};
-const std::vector<int> n_list = {128, 256, 512, 1024, 2048};
-const std::vector<int> k_list = {128, 256, 512, 1024, 2048};
-
-// const std::vector<int> m_list = {2, 8, 32, 128, 2, 8, 32, 128};
-// const std::vector<int> n_list = {2048, 2048, 2048, 2048, 4096, 4096, 4096, 4096};
-// const std::vector<int> k_list = {2048, 2048, 2048, 2048, 4096, 4096, 4096, 4096};
-
-// List of kernels that have been implemented and are supposed to be tested.
-const std::vector<std::string> kernel_list = {"naive", "cublas"};
+#include "configs.h"
 
 int main(void) {
     assert((m_list.size() == n_list.size()) && (m_list.size() == k_list.size()));
@@ -29,6 +17,7 @@ int main(void) {
         const int n = n_list[test_case];
         const int k = k_list[test_case];
         printf("Test %d: m = %d, n = %d, k = %d\n", test_case, m, n, k);
+        estimate_compute_and_IO_cost(m, n, k, device_fp32_compute_capacity_tflops, device_global_mem_bandwidth_GB_per_sec);
 
         // Allocate space for the matrices, the goal is to calculate A @ B and store it in C
         // h for host, d for device; h_C_ref is for correctness checking

@@ -41,6 +41,22 @@ void print_matrix(float* A, int M, int N){
     }
 }
 
+void estimate_compute_and_IO_cost(int M, int N, int K, double compute_capacity, double bandwidth) {
+    // compute_capacity: fp32 computing ability of GPU in TFLOPS
+    // bandwidth: bandwidth between GPU global memory and chip, in GB/s
+    double total_flops = (double(M)) * N * K * 2;
+    double total_data_IO_memory = ((M * K) + (K * N) + (M * N)) * 4;  // float dtype has 4 bytes
+    
+    printf("Amount of computation: %lf GFLOPS; Amount of memory IO: %lf MB\n", 
+            total_flops / (1024 * 1024 * 1024), 
+            total_data_IO_memory / (1024 * 1024));
+
+    printf("Theoretical computation time: %lf ms; Theoretical IO time: %lf ms; Ratio of Compute to IO: %lf\n", 
+            total_flops * 1000 / (compute_capacity * 1024 * 1024 * 1024 * 1024),
+            total_data_IO_memory * 1000 / (bandwidth * 1024 * 1024 * 1024),
+            (total_flops * bandwidth)/ (1024 * total_data_IO_memory * compute_capacity));
+}
+
 
 void sync_device_and_check_kernel_error() {
     cudaError_t errSync = cudaGetLastError();                             

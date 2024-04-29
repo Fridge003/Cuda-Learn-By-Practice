@@ -6,6 +6,7 @@
 
 #define OFFSET(row, col, ld) ((row) * (ld) + (col))
 
+// In naive kernel, each thread is responsible for a single element in the output matrix.
 __global__ void naive_gemm_kernel(float* __restrict__ a, float* __restrict__ b, float* __restrict__ c, 
                                   const int M, const int N, const int K) {
 
