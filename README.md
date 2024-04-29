@@ -10,7 +10,7 @@ make
 ``````
 
 
-## Reference:
+## Reference
 
 [SGEMM_CUDA](https://github.com/siboehm/SGEMM_CUDA) by [siboehm](https://github.com/siboehm) (This tutorial is really awesome!)
 

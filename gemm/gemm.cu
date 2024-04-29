@@ -2,15 +2,15 @@
 #include <stdlib.h>
 #include <vector>
 #include <string>
+#include <cassert>
 #include <cuda_runtime.h>
 
 #include "runner.cuh"
 #include "utils.cuh"
 
-// The size of m_list, n_list, k_list should be the same.
-const std::vector<int> m_list = {8, 128, 2048};
-const std::vector<int> n_list = {2048, 2048, 2048};
-const std::vector<int> k_list = {2048, 2048, 2048};
+const std::vector<int> m_list = {128, 256, 512, 1024, 2048};
+const std::vector<int> n_list = {128, 256, 512, 1024, 2048};
+const std::vector<int> k_list = {128, 256, 512, 1024, 2048};
 
 // const std::vector<int> m_list = {2, 8, 32, 128, 2, 8, 32, 128};
 // const std::vector<int> n_list = {2048, 2048, 2048, 2048, 4096, 4096, 4096, 4096};
@@ -19,8 +19,9 @@ const std::vector<int> k_list = {2048, 2048, 2048};
 // List of kernels that have been implemented and are supposed to be tested.
 const std::vector<std::string> kernel_list = {"naive", "cublas"};
 
-int main(int argc, char **argv) {
-
+int main(void) {
+    assert((m_list.size() == n_list.size()) && (m_list.size() == k_list.size()));
+    
     for (int test_case = 0; test_case < m_list.size(); ++test_case) {
         print_border_line();
 
