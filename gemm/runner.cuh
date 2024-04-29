@@ -11,10 +11,6 @@
 #define BLOCK_Y 32
 #define CEIL_DIV(M, N) (((M) + (N) - 1) / (N))
 
-void run_cpu_gemm(float* A, float* B, float* C, int m, int n, int k) {
-    cpu_gemm(A, B, C, m, n, k);
-}
-
 void run_cublas_gemm(float* A, float* B, float* C, int m, int n, int k) {
     cublasHandle_t handle;
     cublasCreate(&handle);
@@ -25,8 +21,8 @@ void run_cublas_gemm(float* A, float* B, float* C, int m, int n, int k) {
 }
 
 void run_naive_gemm(float* A, float* B, float* C, int m, int n, int k) {
-    dim3 block_size(BLOCK_X, BLOCK_Y);
-    dim3 grid_size(CEIL_DIV(m, BLOCK_X), CEIL_DIV(n, BLOCK_Y));   
+    dim3 grid_size(CEIL_DIV(m, BLOCK_X), CEIL_DIV(n, BLOCK_Y), 1);   
+    dim3 block_size(BLOCK_X, BLOCK_Y, 1);
     naive_gemm_kernel<<<grid_size, block_size>>>(A, B, C, m, n, k);
 }
 
