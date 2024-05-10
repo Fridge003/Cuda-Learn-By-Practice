@@ -8,10 +8,6 @@ const std::vector<int> m_list = {128, 256, 512, 1024, 2048, 4096};
 const std::vector<int> n_list = {128, 256, 512, 1024, 2048, 4096};
 const std::vector<int> k_list = {128, 256, 512, 1024, 2048, 4096};
 
-// const std::vector<int> m_list = {2, 8, 32, 128, 2, 8, 32, 128};
-// const std::vector<int> n_list = {2048, 2048, 2048, 2048, 4096, 4096, 4096, 4096};
-// const std::vector<int> k_list = {2048, 2048, 2048, 2048, 4096, 4096, 4096, 4096};
-
 // List of kernels that have been implemented and are supposed to be tested.
 const std::vector<std::string> kernel_list = {"naive", "global_memory_coalescing", "cublas"};
 

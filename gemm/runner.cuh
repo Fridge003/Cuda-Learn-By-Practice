@@ -7,8 +7,6 @@
 
 #include "kernels.cuh"
 
-#define BLOCK_X 32
-#define BLOCK_Y 32
 #define CEIL_DIV(M, N) (((M) + (N) - 1) / (N))
 
 void run_cublas_gemm(float* A, float* B, float* C, int m, int n, int k) {
@@ -21,15 +19,16 @@ void run_cublas_gemm(float* A, float* B, float* C, int m, int n, int k) {
 }
 
 void run_naive_gemm(float* A, float* B, float* C, int m, int n, int k) {
-    dim3 grid_size(CEIL_DIV(m, BLOCK_X), CEIL_DIV(n, BLOCK_Y));   
-    dim3 block_size(BLOCK_X, BLOCK_Y);
+    dim3 grid_size(CEIL_DIV(m, 32), CEIL_DIV(n, 32));   
+    dim3 block_size(32, 32);
     naive_gemm_kernel<<<grid_size, block_size>>>(A, B, C, m, n, k);
 }
 
 void run_global_memory_coalescing_kernel(float* A, float* B, float* C, int m, int n, int k) {
-    dim3 grid_size(CEIL_DIV(m, BLOCK_X), CEIL_DIV(n, BLOCK_Y));   
-    dim3 block_size(BLOCK_X, BLOCK_Y);
-    global_memory_coalescing_gemm_kernel<<<grid_size, block_size>>>(A, B, C, m, n, k);
+    const int BLOCKSIZE = 32;
+    dim3 grid_size(CEIL_DIV(m, BLOCKSIZE), CEIL_DIV(n, BLOCKSIZE));   
+    dim3 block_size(BLOCKSIZE * BLOCKSIZE);
+    global_memory_coalescing_gemm_kernel<BLOCKSIZE><<<grid_size, block_size>>>(A, B, C, m, n, k);
 }
 
 
