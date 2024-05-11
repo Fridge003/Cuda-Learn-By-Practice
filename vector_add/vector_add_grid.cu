@@ -1,66 +1,66 @@
 #include <stdio.h>
 
-__global__ void add_kernel(float *x, float *y, float *out, int n){
-    // Each thread computes one element
-    int tid = blockIdx.x * blockDim.x + threadIdx.x;
-    if(tid < n) {
-        out[tid] = x[tid] + y[tid];
-    }
+__global__ void add_kernel(float *x, float *y, float *out, int n) {
+  // Each thread computes one element
+  int tid = blockIdx.x * blockDim.x + threadIdx.x;
+  if (tid < n) {
+    out[tid] = x[tid] + y[tid];
+  }
 }
 
-int main(){
-    int N = 10000000;
-    size_t mem_size = sizeof(float) * N;
+int main() {
+  int N = 10000000;
+  size_t mem_size = sizeof(float) * N;
 
-    float *x, *y, *out;
-    float *cuda_x, *cuda_y, *cuda_out;
+  float *x, *y, *out;
+  float *cuda_x, *cuda_y, *cuda_out;
 
-    // Allocate host CPU memory for x, y
-    x = static_cast<float*>(malloc(mem_size));
-    y = static_cast<float*>(malloc(mem_size));
+  // Allocate host CPU memory for x, y
+  x = static_cast<float *>(malloc(mem_size));
+  y = static_cast<float *>(malloc(mem_size));
 
-    // Initialize x = 1, y = 2
-    for(int i = 0; i < N; ++i){
-        x[i] = 1.0;
-        y[i] = 2.0;
-    }
+  // Initialize x = 1, y = 2
+  for (int i = 0; i < N; ++i) {
+    x[i] = 1.0;
+    y[i] = 2.0;
+  }
 
-    // Allocate Device CUDA memory for cuda_x and cuda_y, copy them.
-    cudaMalloc((void**)&cuda_x, mem_size);
-    cudaMemcpy(cuda_x, x, mem_size, cudaMemcpyHostToDevice);
+  // Allocate Device CUDA memory for cuda_x and cuda_y, copy them.
+  cudaMalloc((void **)&cuda_x, mem_size);
+  cudaMemcpy(cuda_x, x, mem_size, cudaMemcpyHostToDevice);
 
-    cudaMalloc((void**)&cuda_y, mem_size);
-    cudaMemcpy(cuda_y, y, mem_size, cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&cuda_y, mem_size);
+  cudaMemcpy(cuda_y, y, mem_size, cudaMemcpyHostToDevice);
 
-    // Allocate cuda_out CUDA memory and launch add_kernel
-    cudaMalloc((void**)&cuda_out, mem_size);
+  // Allocate cuda_out CUDA memory and launch add_kernel
+  cudaMalloc((void **)&cuda_out, mem_size);
 
-    // Compute blocksize and gridsize
-    size_t block_size = 256;
-    size_t grid_size = (N + block_size - 1) / block_size;
-    add_kernel<<<grid_size, block_size>>>(cuda_x, cuda_y, cuda_out, N);
+  // Compute blocksize and gridsize
+  size_t block_size = 256;
+  size_t grid_size = (N + block_size - 1) / block_size;
+  add_kernel<<<grid_size, block_size>>>(cuda_x, cuda_y, cuda_out, N);
 
-    // Copy result from GPU into CPU
-    out = static_cast<float*>(malloc(mem_size));
-    cudaMemcpy(out, cuda_out, mem_size, cudaMemcpyDeviceToHost);
-    
-    // Sync CUDA stream to wait kernel completation
-    cudaDeviceSynchronize();
+  // Copy result from GPU into CPU
+  out = static_cast<float *>(malloc(mem_size));
+  cudaMemcpy(out, cuda_out, mem_size, cudaMemcpyDeviceToHost);
 
-    // Print result and checkout out = 3.
-    for(int i = 0; i < 10; ++i){
-        printf("out[%d] = %.3f\n", i, out[i]);
-    }
+  // Sync CUDA stream to wait kernel completation
+  cudaDeviceSynchronize();
 
-    // Free CUDA Memory
-    cudaFree(cuda_x);
-    cudaFree(cuda_y);
-    cudaFree(cuda_out);
+  // Print result and checkout out = 3.
+  for (int i = 0; i < 10; ++i) {
+    printf("out[%d] = %.3f\n", i, out[i]);
+  }
 
-    // Free Host CPU Memory
-    free(x);
-    free(y);
-    free(out);
+  // Free CUDA Memory
+  cudaFree(cuda_x);
+  cudaFree(cuda_y);
+  cudaFree(cuda_out);
 
-    return 0;
+  // Free Host CPU Memory
+  free(x);
+  free(y);
+  free(out);
+
+  return 0;
 }
