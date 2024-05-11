@@ -15,6 +15,37 @@ void print_border_line() {
   printf("\n");
 }
 
+void CudaDeviceInfo() {
+  print_border_line();
+
+  int deviceId;
+  cudaGetDevice(&deviceId);
+
+  cudaDeviceProp props{};
+  cudaGetDeviceProperties(&props, deviceId);
+
+  printf("Device ID: %d\n\
+    Name: %s\n\
+    Compute Capability: %d.%d\n\
+    memoryBusWidth: %d\n\
+    maxThreadsPerBlock: %d\n\
+    maxThreadsPerMultiProcessor: %d\n\
+    maxRegsPerBlock: %d\n\
+    maxRegsPerMultiProcessor: %d\n\
+    totalGlobalMem: %zuMB\n\
+    sharedMemPerBlock: %zuKB\n\
+    sharedMemPerMultiprocessor: %zuKB\n\
+    totalConstMem: %zuKB\n\
+    multiProcessorCount: %d\n\
+    Warp Size: %d\n",
+         deviceId, props.name, props.major, props.minor, props.memoryBusWidth,
+         props.maxThreadsPerBlock, props.maxThreadsPerMultiProcessor,
+         props.regsPerBlock, props.regsPerMultiprocessor,
+         props.totalGlobalMem / 1024 / 1024, props.sharedMemPerBlock / 1024,
+         props.sharedMemPerMultiprocessor / 1024, props.totalConstMem / 1024,
+         props.multiProcessorCount, props.warpSize);
+}
+
 void range_init_matrix(float *mat, int N) {
   for (int i = 0; i < N; i++) {
     mat[i] = i;

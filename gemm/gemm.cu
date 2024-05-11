@@ -33,6 +33,8 @@ int main(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
+  CudaDeviceInfo();
+
   for (int test_case = 0; test_case < mnk_list.size(); ++test_case) {
     print_border_line();
 
