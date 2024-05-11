@@ -1,14 +1,33 @@
 This repository stores codes when I was learning CUDA programming.
 
-To run the gemm cuda kernels, execute following commands:
+To compile, execute following commands:
 ```bash
 mkdir build
 cd build
 cmake ..
 make
-./gemm
-``````
+```
 
+To run test on all gemm kernels:
+```bash
+./gemm
+```
+
+To run a specific gemm kernel:
+```bash
+./gemm [kernel_idx]
+```
+
+The following are each kernel's performance of running 4096x4096 GEMM on NVIDIA V100:
+
+<!-- benchmark_results -->
+|Idx| Kernel                           |  GFLOPs/s | Performance relative to cuBLAS |
+|:--|----------------------------------|----------:|:-------------------------------|
+| 1 | Naive                            |   `220.0` | 1.96%                          |
+| 2 | Global Memory Coalescing         |  `1919.3` | 17.09%                         |
+| 3 | Shared Memory Cache Blocking     |  `3986.6` | 35.51%                         |
+| 0 | cuBLAS                           | `11227.6` | 100.0%                         |
+<!-- benchmark_results -->
 
 ## Reference
 

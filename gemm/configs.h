@@ -1,17 +1,20 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 // List of m, n and k values that are supposed to be tested.
-const std::vector<int> m_list = {128, 256, 512, 1024, 2048, 4096};
-const std::vector<int> n_list = {128, 256, 512, 1024, 2048, 4096};
-const std::vector<int> k_list = {128, 256, 512, 1024, 2048, 4096};
+const std::vector<std::vector<int>> mnk_list = {
+    {256, 256, 256}, {1024, 1024, 1024}, {4096, 4096, 4096}};
 
 // List of kernels that have been implemented and are supposed to be tested.
-const std::vector<std::string> kernel_list = {
-    "naive", "global_memory_coalescing", "shared_memory_cache_blocking",
-    "cublas"};
+const std::vector<std::string> registered_kernel = {
+    "cublas",
+    "naive",
+    "global_memory_coalescing",
+    "shared_memory_cache_blocking",
+};
 
 // Parameters of V100 for PCIe
 // const double device_fp32_compute_capacity_tflops = 14.0;

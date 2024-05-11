@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cuda_runtime.h>
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -7,18 +8,38 @@
 #include "runner.cuh"
 #include "utils.cuh"
 
-int main(void) {
+int main(int argc, char **argv) {
 
-  // TODO: Add Debug Mode
+  std::vector<std::string> kernels_to_run;
 
-  assert((m_list.size() == n_list.size()) && (m_list.size() == k_list.size()));
+  if (argc == 1) {
+    kernels_to_run = registered_kernel;
+  } else if (argc == 2) {
+    // Get kernel number.
+    int kernel_num = std::stoi(argv[1]);
+    if (kernel_num < 0 || kernel_num >= registered_kernel.size()) {
+      printf("Please enter a valid kernel number (0-%d), valid kernels are as "
+             "follows:\n",
+             registered_kernel.size() - 1);
+      for (int i = 0; i < registered_kernel.size(); ++i) {
+        printf("Kernel %d: %s\n", i, registered_kernel[i].c_str());
+      }
+      exit(EXIT_FAILURE);
+    }
+    kernels_to_run.push_back(registered_kernel[kernel_num]);
+  } else {
+    printf("Too many arguments! Usage: ./gemm for testing of all kernels; "
+           "./gemm [kernel idx] for testing one kernel.");
+    exit(EXIT_FAILURE);
+  }
 
-  for (int test_case = 0; test_case < m_list.size(); ++test_case) {
+  for (int test_case = 0; test_case < mnk_list.size(); ++test_case) {
     print_border_line();
 
-    const int m = m_list[test_case];
-    const int n = n_list[test_case];
-    const int k = k_list[test_case];
+    const int m = mnk_list[test_case][0];
+    const int n = mnk_list[test_case][1];
+    const int k = mnk_list[test_case][2];
+
     printf("Test %d: m = %d, n = %d, k = %d\n", test_case, m, n, k);
     estimate_compute_and_IO_cost(m, n, k, device_fp32_compute_capacity_tflops,
                                  device_global_mem_bandwidth_GB_per_sec);
@@ -52,7 +73,7 @@ int main(void) {
     cudaMemcpy(h_C_ref, d_C_ref, size_C, cudaMemcpyDeviceToHost);
 
     // Test each kernel.
-    for (const std::string &kernel : kernel_list) {
+    for (const std::string &kernel : kernels_to_run) {
       printf("\nKernel: %s\n", kernel.c_str());
 
       zero_init_matrix(h_C, m * n);
