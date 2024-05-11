@@ -8,6 +8,9 @@
 #include "configs.h"
 
 int main(void) {
+
+    // TODO: Add Debug Mode/Add pre-commit
+    
     assert((m_list.size() == n_list.size()) && (m_list.size() == k_list.size()));
     
     for (int test_case = 0; test_case < m_list.size(); ++test_case) {

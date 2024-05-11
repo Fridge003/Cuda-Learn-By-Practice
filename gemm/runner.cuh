@@ -31,6 +31,12 @@ void run_global_memory_coalescing_kernel(float* A, float* B, float* C, int m, in
     global_memory_coalescing_gemm_kernel<BLOCKSIZE><<<grid_size, block_size>>>(A, B, C, m, n, k);
 }
 
+void run_shared_memory_cache_blocking_kernel(float* A, float* B, float* C, int m, int n, int k) {
+    const int BLOCKSIZE = 32;
+    dim3 grid_size(CEIL_DIV(m, BLOCKSIZE), CEIL_DIV(n, BLOCKSIZE));   
+    dim3 block_size(BLOCKSIZE * BLOCKSIZE);
+    shared_memory_cache_blocking_gemm_kernel<BLOCKSIZE><<<grid_size, block_size>>>(A, B, C, m, n, k);
+}
 
 bool run_kernel(float* A,
                 float* B,
@@ -49,6 +55,11 @@ bool run_kernel(float* A,
 
     if (kernel == "global_memory_coalescing") {
         run_global_memory_coalescing_kernel(A, B, C, m, n, k);
+        valid_kernel = true;
+    }
+
+    if (kernel == "shared_memory_cache_blocking") {
+        run_shared_memory_cache_blocking_kernel(A, B, C, m, n, k);
         valid_kernel = true;
     }
 

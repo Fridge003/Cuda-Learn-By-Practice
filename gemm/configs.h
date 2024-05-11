@@ -9,7 +9,7 @@ const std::vector<int> n_list = {128, 256, 512, 1024, 2048, 4096};
 const std::vector<int> k_list = {128, 256, 512, 1024, 2048, 4096};
 
 // List of kernels that have been implemented and are supposed to be tested.
-const std::vector<std::string> kernel_list = {"naive", "global_memory_coalescing", "cublas"};
+const std::vector<std::string> kernel_list = {"naive", "global_memory_coalescing", "shared_memory_cache_blocking", "cublas"};
 
 // Parameters of V100 for PCIe
 // const double device_fp32_compute_capacity_tflops = 14.0;

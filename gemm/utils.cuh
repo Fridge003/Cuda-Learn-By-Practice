@@ -24,7 +24,9 @@ void range_init_matrix(float* mat, int N) {
 void randomize_matrix(float* mat, int N) {
     srand(time(0));
     for (int i = 0; i < N; i++) {
-        mat[i] = rand() % 100;
+        float tmp = (float)(rand() % 5);
+        tmp = (rand() % 2 == 0) ? tmp : tmp * (-1.);
+        mat[i] = tmp;
     }
 }
 
@@ -78,6 +80,7 @@ bool check_result_correctness(float* mat, float* mat_ref, int M, int N) {
     int nan_cnt = 0;
     int incorrect_cnt = 0;
     int total_cnt = M * N;
+    float max_err = 0;
 
     for (int i = 0; i < total_cnt; i++) {
         float err = abs(mat[i] - mat_ref[i]);
@@ -85,12 +88,13 @@ bool check_result_correctness(float* mat, float* mat_ref, int M, int N) {
             nan_cnt++;
         } if (err > eps) {
             incorrect_cnt++;
+            max_err = max(max_err, err);
         }
     }
 
     if (nan_cnt > 0 || incorrect_cnt > 0) {
         correct = false;
-        printf("Correctness Check: Not Pass! Incorrect elements: %d/%d, NaN elements: %d/%d\n", incorrect_cnt, total_cnt, nan_cnt, total_cnt);
+        printf("Correctness Check: Not Pass! Incorrect elements: %d/%d, NaN elements: %d/%d, Max Error: %f\n", incorrect_cnt, total_cnt, nan_cnt, total_cnt, max_err);
     } else {
         printf("Correctness Check: Pass!\n");
     }
