@@ -1,4 +1,8 @@
-This repository stores codes when I was learning CUDA programming.
+## Introduction
+
+When I was self-learning CUDA programming, I found that it is necessary to work under an environment that manages and compiles the kernels in an efficient way. So I built up this repository under the inspiration of several other repositories on github, especially [SGEMM_CUDA](https://github.com/siboehm/SGEMM_CUDA).
+
+## Usage
 
 To compile, execute following commands:
 ```bash
@@ -13,10 +17,23 @@ To run test on all gemm kernels:
 ./gemm
 ```
 
-To run a specific gemm kernel:
+To run a specific gemm kernel(the kernel_idx should be an integer between 0 and kernel number):
 ```bash
 ./gemm [kernel_idx]
 ```
+
+To display the list of implemented kernels:
+```bash
+./gemm -1
+```
+
+The list of implemented kernels are registered in the list `registered_kernel` in `gemm/config.h`.
+
+To change the shapes of matrices for testing, modify the `mnk_list` variable in `gemm/config.h` and compile again.
+
+
+
+## Benchmark
 
 The following are each kernel's performance of running 4096x4096 GEMM on NVIDIA V100:
 
