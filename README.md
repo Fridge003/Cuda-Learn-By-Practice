@@ -43,8 +43,8 @@ The following are each kernel's performance of running 4096x4096 GEMM on NVIDIA 
 | 1 | Naive                            |   `220.0` | 1.96%                          |
 | 2 | Global Memory Coalescing         |  `1919.3` | 17.09%                         |
 | 3 | Shared Memory Cache Blocking     |  `3986.6` | 35.51%                         |
-| 4 | 1D Block Tiling                  |  `6589.1` | 35.51%                         |
-| 0 | cuBLAS                           | `11227.6` | 58.69%                         |
+| 4 | 1D Block Tiling                  |  `6589.1` | 58.69%                         |
+| 0 | cuBLAS                           | `11227.6` | 100.00%                         |
 <!-- benchmark_results -->
 
 ## Reference
