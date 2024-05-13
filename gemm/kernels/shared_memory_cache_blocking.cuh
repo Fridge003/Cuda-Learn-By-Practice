@@ -36,7 +36,7 @@ __global__ void shared_memory_cache_blocking_gemm_kernel(
 
   float thread_sum = 0.0;
   // The outer loop goes through rows of A and columns of B.
-  for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
+  for (int block_idx = 0; block_idx < K; block_idx += BLOCKSIZE) {
 
     // Fetching data needed in current step from A, B to shared memory A_s, B_s.
     A_s[OFFSET(thread_row, thread_col, BLOCKSIZE)] =
@@ -46,9 +46,9 @@ __global__ void shared_memory_cache_blocking_gemm_kernel(
     __syncthreads();
 
     // In the inner loop each thread updates the dot product it maintains.
-    for (int dotIdx = 0; dotIdx < BLOCKSIZE; ++dotIdx) {
-      thread_sum += A_s[OFFSET(thread_row, dotIdx, BLOCKSIZE)] *
-                    B_s[OFFSET(dotIdx, thread_col, BLOCKSIZE)];
+    for (int dot_idx = 0; dot_idx < BLOCKSIZE; ++dot_idx) {
+      thread_sum += A_s[OFFSET(thread_row, dot_idx, BLOCKSIZE)] *
+                    B_s[OFFSET(dot_idx, thread_col, BLOCKSIZE)];
     }
 
     // Needs to sync again to avoid faster threads updating A_s, B_s before

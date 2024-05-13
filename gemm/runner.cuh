@@ -43,6 +43,19 @@ void run_shared_memory_cache_blocking_kernel(float *A, float *B, float *C,
       <<<grid_size, block_size>>>(A, B, C, m, n, k);
 }
 
+void run_one_d_block_tiling_kernel(float *A, float *B, float *C, int m, int n,
+                                   int k) {
+  const int BM = 64;
+  const int BN = 64;
+  const int BK = 8;
+  const int TM = 8;
+
+  dim3 grid_size(CEIL_DIV(m, BM), CEIL_DIV(n, BN));
+  dim3 block_size(BM * BN / TM);
+  one_d_block_tiling_gemm_kernel<BM, BN, BK, TM>
+      <<<grid_size, block_size>>>(A, B, C, m, n, k);
+}
+
 bool run_kernel(float *A, float *B, float *C, int m, int n, int k,
                 const std::string &kernel) {
 
@@ -60,6 +73,11 @@ bool run_kernel(float *A, float *B, float *C, int m, int n, int k,
 
   if (kernel == "shared_memory_cache_blocking") {
     run_shared_memory_cache_blocking_kernel(A, B, C, m, n, k);
+    valid_kernel = true;
+  }
+
+  if (kernel == "1D_block_tiling") {
+    run_one_d_block_tiling_kernel(A, B, C, m, n, k);
     valid_kernel = true;
   }
 
