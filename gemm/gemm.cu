@@ -33,6 +33,13 @@ int main(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
+  // Get device if set in environment variable.
+  int deviceIdx = 0;
+  if (getenv("DEVICE") != NULL) {
+    deviceIdx = atoi(getenv("DEVICE"));
+  }
+  CUDA_CHECK(cudaSetDevice(deviceIdx));
+
   CudaDeviceInfo();
 
   for (int test_case = 0; test_case < mnk_list.size(); ++test_case) {
@@ -57,29 +64,29 @@ int main(int argc, char **argv) {
     h_B = (float *)malloc(size_B);
     h_C = (float *)malloc(size_C);
     h_C_ref = (float *)malloc(size_C);
-    cudaMalloc(&d_A, size_A);
-    cudaMalloc(&d_B, size_B);
-    cudaMalloc(&d_C, size_C);
-    cudaMalloc(&d_C_ref, size_C);
+    CUDA_CHECK(cudaMalloc(&d_A, size_A));
+    CUDA_CHECK(cudaMalloc(&d_B, size_B));
+    CUDA_CHECK(cudaMalloc(&d_C, size_C));
+    CUDA_CHECK(cudaMalloc(&d_C_ref, size_C));
 
     // Initialize the matrices, and copy them to device.
     randomize_matrix(h_A, m * k);
     randomize_matrix(h_B, k * n);
     zero_init_matrix(h_C_ref, m * n);
-    cudaMemcpy(d_A, h_A, size_A, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_B, h_B, size_B, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_C_ref, h_C_ref, size_C, cudaMemcpyHostToDevice);
+    CUDA_CHECK(cudaMemcpy(d_A, h_A, size_A, cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_B, h_B, size_B, cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_C_ref, h_C_ref, size_C, cudaMemcpyHostToDevice));
 
     // Store the correct result in d_C_ref, and copy back.
     run_cublas_gemm(d_A, d_B, d_C_ref, m, n, k);
-    cudaMemcpy(h_C_ref, d_C_ref, size_C, cudaMemcpyDeviceToHost);
+    CUDA_CHECK(cudaMemcpy(h_C_ref, d_C_ref, size_C, cudaMemcpyDeviceToHost));
 
     // Test each kernel.
     for (const std::string &kernel : kernels_to_run) {
       printf("\nKernel: %s\n", kernel.c_str());
 
       zero_init_matrix(h_C, m * n);
-      cudaMemcpy(d_C, h_C, size_C, cudaMemcpyHostToDevice);
+      CUDA_CHECK(cudaMemcpy(d_C, h_C, size_C, cudaMemcpyHostToDevice));
 
       // Check kernel validity.
       bool valid_kernel = run_kernel(d_A, d_B, d_C, m, n, k, kernel);
@@ -87,8 +94,9 @@ int main(int argc, char **argv) {
         continue;
 
       // Check Correctness.
-      sync_device_and_check_kernel_error();
-      cudaMemcpy(h_C, d_C, size_C, cudaMemcpyDeviceToHost);
+      CUDA_CHECK(cudaGetLastError());
+      CUDA_CHECK(cudaDeviceSynchronize());
+      CUDA_CHECK(cudaMemcpy(h_C, d_C, size_C, cudaMemcpyDeviceToHost));
       bool correct = check_result_correctness(h_C, h_C_ref, m, n);
       if (!correct)
         continue;
@@ -102,9 +110,9 @@ int main(int argc, char **argv) {
     free(h_B);
     free(h_C);
     free(h_C_ref);
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
+    CUDA_CHECK(cudaFree(d_A));
+    CUDA_CHECK(cudaFree(d_B));
+    CUDA_CHECK(cudaFree(d_C));
   }
   print_border_line();
 

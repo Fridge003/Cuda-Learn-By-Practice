@@ -14,12 +14,13 @@ make
 
 To run test on all gemm kernels:
 ```bash
-./gemm
+DEVICE=[device_id] ./gemm
 ```
+Here the device_id of gpu is 0 by default.
 
 To run a specific gemm kernel(the kernel_idx should be an integer between 0 and kernel number):
 ```bash
-./gemm [kernel_idx]
+DEVICE=[device_id] ./gemm [kernel_idx]
 ```
 
 To display the list of implemented kernels:

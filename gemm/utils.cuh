@@ -8,12 +8,22 @@
 
 #include "runner.cuh"
 
+#define CUDA_CHECK(err) (CudaCheck(err, __FILE__, __LINE__))
+
 void print_border_line() {
   for (int i = 0; i < 30; ++i) {
     printf("-");
   }
   printf("\n");
 }
+
+void CudaCheck(cudaError_t error, const char *file, int line) {
+  if (error != cudaSuccess) {
+    printf("[CUDA ERROR] at file %s:%d:\n%s\n", file, line,
+           cudaGetErrorString(error));
+    exit(EXIT_FAILURE);
+  }
+};
 
 void CudaDeviceInfo() {
   print_border_line();
@@ -90,20 +100,6 @@ void estimate_compute_and_IO_cost(int M, int N, int K, double compute_capacity,
          total_data_IO_memory * 1000 / (bandwidth * 1024 * 1024 * 1024),
          (total_flops * bandwidth) /
              (1024 * total_data_IO_memory * compute_capacity));
-}
-
-void sync_device_and_check_kernel_error() {
-  cudaError_t errSync = cudaGetLastError();
-  cudaError_t errAsync = cudaDeviceSynchronize();
-  if (errSync != cudaSuccess) {
-    printf("Sync kernel error: %s\n", cudaGetErrorString(errSync));
-    exit(EXIT_FAILURE);
-  }
-
-  if (errAsync != cudaSuccess) {
-    printf("Async kernel error: %s\n", cudaGetErrorString(errAsync));
-    exit(EXIT_FAILURE);
-  }
 }
 
 bool check_result_correctness(float *mat, float *mat_ref, int M, int N) {
