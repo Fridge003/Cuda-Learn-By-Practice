@@ -21,8 +21,8 @@ two_d_block_tiling_gemm_kernel(float *__restrict__ a, float *__restrict__ b,
   const int block_col_start = blockIdx.y * BN;
 
   // Number of threads in each row/col of block.
-  const int num_thread_row = BN / TN;
-  const int num_thread_col = BM / TM;
+  const int num_thread_row = BM / TM;
+  const int num_thread_col = BN / TN;
   const int num_thread_block = num_thread_row * num_thread_col;
 
   // Current thread computes an 2D submatrix
@@ -30,8 +30,8 @@ two_d_block_tiling_gemm_kernel(float *__restrict__ a, float *__restrict__ b,
   // TM,
   //   block_col_start + thread_col * TN: block_col_start + (thread_col + 1) *
   //   TN].
-  const int thread_row = threadIdx.x / num_thread_row;
-  const int thread_col = threadIdx.x % num_thread_row;
+  const int thread_row = threadIdx.x / num_thread_col;
+  const int thread_col = threadIdx.x % num_thread_col;
 
   // Advance pointer A, B, C to the starter position of submatrix.
   float *A = a, *B = b, *C = c;
@@ -44,8 +44,8 @@ two_d_block_tiling_gemm_kernel(float *__restrict__ a, float *__restrict__ b,
   __shared__ float B_s[BK * BN];
 
   // When loading elements of A from GMEM to SMEM, each thread loads a certain
-  // number of elements with load_col_A as its column index for better GMEM
-  // coalescing. The number of elements loaded by each thread is determined by
+  // number of elements with load_col_A as its column index to achieve better
+  // GMEM coalescing. The number of elements loaded by each thread is
   // num_load_A_per_thread.
   const int load_col_A = threadIdx.x % BK;
   const int load_row_A_start = threadIdx.x / BK;
@@ -74,10 +74,11 @@ two_d_block_tiling_gemm_kernel(float *__restrict__ a, float *__restrict__ b,
       A_s[OFFSET(load_row_A, load_col_A, BK)] =
           A[OFFSET(load_row_A, load_col_A, K)];
     }
+
     for (int load_row_B = load_row_B_start; load_row_B < BK;
          load_row_B += load_row_B_stride) {
-      A_s[OFFSET(load_row_B, load_col_B, BN)] =
-          A[OFFSET(load_row_B, load_col_B, N)];
+      B_s[OFFSET(load_row_B, load_col_B, BN)] =
+          B[OFFSET(load_row_B, load_col_B, N)];
     }
     __syncthreads();
 
@@ -102,12 +103,12 @@ two_d_block_tiling_gemm_kernel(float *__restrict__ a, float *__restrict__ b,
               tmp_M[res_idx_M] * tmp_N[res_idx_N];
         }
       }
-      __syncthreads();
-
-      // Advance A, B to the next position.
-      A += BK;
-      B += BK * N;
     }
+    __syncthreads();
+
+    // Advance A, B to the next position.
+    A += BK;
+    B += BK * N;
   }
 
   // Write results to C
