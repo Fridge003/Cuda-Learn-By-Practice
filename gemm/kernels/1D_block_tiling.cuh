@@ -6,9 +6,8 @@
 #define OFFSET(row, col, ld) ((row) * (ld) + (col))
 
 // The kernel is almost the same as shared_memory_cache_blocking kernel,
-// except that each threads computes multiple elements of c instead of one.
-// Each block contains (BM * BM / TM) threads, and each thread computes TM
-// elements of c.
+// except that each threads computes TM elements of c instead of one.
+// Each block contains (BM * BM / TM) threads.
 
 // Through lifting the number of elements per thread,
 // the per-thread number of loading from shared memory can b divided by the size
@@ -37,11 +36,6 @@ one_d_block_tiling_gemm_kernel(float *__restrict__ a, float *__restrict__ b,
   A += OFFSET(block_row_start, 0, K);
   B += OFFSET(0, block_col_start, N);
   C += OFFSET(block_row_start, block_col_start, N);
-
-  // Here to make the number of threads per block equal to the number of
-  // elements in shared memory, TM * BK == BM == BN should hold.
-  assert(TM * BK == BM);
-  assert(TM * BK == BN);
 
   // The positions of elements in A and B to fetch from global memory to shared
   // memory.
