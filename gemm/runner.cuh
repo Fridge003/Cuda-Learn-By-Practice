@@ -82,6 +82,28 @@ void run_two_d_block_tiling_kernel(float *A, float *B, float *C, int m, int n,
       <<<grid_size, block_size>>>(A, B, C, m, n, k);
 }
 
+void run_vectorized_two_d_block_tiling_kernel(float *A, float *B, float *C,
+                                              int m, int n, int k) {
+
+  // Sometimes tuning the BM/BN/BK/TM/TN here might cause boost of performance,
+  // it depends on device settings.
+  const int BM = 128;
+  const int BN = 128;
+  const int BK = 8;
+  const int TM = 8;
+  const int TN = 8;
+
+  // Make assertions that make vectorization work.
+  assert(BK % 4 == 0);
+  assert(BN % 4 == 0);
+  assert(TN % 4 == 0);
+
+  dim3 grid_size(CEIL_DIV(m, BM), CEIL_DIV(n, BN));
+  dim3 block_size((BM * BN) / (TM * TN));
+  vectorized_two_d_block_tiling_gemm_kernel<BM, BN, BK, TM, TN>
+      <<<grid_size, block_size>>>(A, B, C, m, n, k);
+}
+
 bool run_kernel(float *A, float *B, float *C, int m, int n, int k,
                 const std::string &kernel) {
 
@@ -109,6 +131,11 @@ bool run_kernel(float *A, float *B, float *C, int m, int n, int k,
 
   if (kernel == "2D_block_tiling") {
     run_two_d_block_tiling_kernel(A, B, C, m, n, k);
+    valid_kernel = true;
+  }
+
+  if (kernel == "vectorized_2D_block_tiling") {
+    run_vectorized_two_d_block_tiling_kernel(A, B, C, m, n, k);
     valid_kernel = true;
   }
 
