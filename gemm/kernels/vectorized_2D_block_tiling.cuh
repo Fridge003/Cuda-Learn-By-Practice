@@ -73,11 +73,11 @@ __global__ void vectorized_two_d_block_tiling_gemm_kernel(
     // loading LDG.E.128 is triggered during compilation.
     for (int load_row_A = load_row_A_start; load_row_A < BM;
          load_row_A += load_row_A_stride) {
-      float4 loaded_bytes = FLOAT4(A[OFFSET(load_row_A, load_col_A * 4, K)])
+      float4 loaded_bytes = FLOAT4(A[OFFSET(load_row_A, load_col_A * 4, K)]);
 
-          // Here A_s is transposed, so loaded column index and loaded row index
-          // are shifted during saving to A_s.
-          A_s[OFFSET(load_col_A * 4 + 0, load_row_A, BM)] = loaded_bytes.x;
+      // Here A_s is transposed, so loaded column index and loaded row index
+      // are shifted during saving to A_s.
+      A_s[OFFSET(load_col_A * 4 + 0, load_row_A, BM)] = loaded_bytes.x;
       A_s[OFFSET(load_col_A * 4 + 1, load_row_A, BM)] = loaded_bytes.y;
       A_s[OFFSET(load_col_A * 4 + 2, load_row_A, BM)] = loaded_bytes.z;
       A_s[OFFSET(load_col_A * 4 + 3, load_row_A, BM)] = loaded_bytes.w;

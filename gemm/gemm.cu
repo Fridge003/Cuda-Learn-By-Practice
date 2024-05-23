@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     // Get kernel number.
     int kernel_num = std::stoi(argv[1]);
     if (kernel_num < 0 || kernel_num >= registered_kernel.size()) {
-      printf("Please enter a valid kernel number (0-%d), valid kernels are as "
+      printf("Please enter a valid kernel number (0-%ld), valid kernels are as "
              "follows:\n",
              registered_kernel.size() - 1);
       for (int i = 0; i < registered_kernel.size(); ++i) {

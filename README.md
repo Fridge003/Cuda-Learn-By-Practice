@@ -36,17 +36,18 @@ To change the shapes of matrices for testing, modify the `mnk_list` variable in 
 
 ## Benchmark
 
-The following are each kernel's performance of running 4096x4096 GEMM on NVIDIA Tesla V100-PCIE-32GB:
+The following are each kernel's performance of running 8192x8192 GEMM on NVIDIA Tesla V100-PCIE-32GB with 16.4 TFLOPS computing capacity:
 
 <!-- benchmark_results -->
 |Idx| Kernel                           |  GFLOPs/s | Performance relative to cuBLAS |
 |:--|----------------------------------|----------:|:-------------------------------|
-| 1 | Naive                            |   `228.8` | 1.91%                          |
-| 2 | Global Memory Coalescing         |  `1817.7` | 15.20%                         |
-| 3 | Shared Memory Cache Blocking     |  `3812.0` | 31.87%                         |
-| 4 | 1D Block Tiling                  |  `7584.5` | 63.42%                         |
-| 5 | 2D Block Tiling                  |  `9574.7` | 80.06%                         |
-| 0 | cuBLAS                           | `11960.0` | 100.00%                        |
+| 1 | Naive                            |   `228.0` | 1.71%                          |
+| 2 | Global Memory Coalescing         |  `1836.1` | 13.77%                         |
+| 3 | Shared Memory Cache Blocking     |  `4087.8` | 30.65%                         |
+| 4 | 1D Block Tiling                  |  `6748.6` | 50.59%                         |
+| 5 | 2D Block Tiling                  |  `9799.3` | 73.46%                         |
+| 6 | Vectorized 2D Block Tiling       | `11712.5` | 87.81%                         |
+| 0 | cuBLAS                           | `13338.9` | 100.00%                        |
 <!-- benchmark_results -->
 
 ## Reference
