@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #define OFFSET(row, col, ld) ((row) * (ld) + (col))
-#define FLOAT4(pointer) (reinterpret_cast<float4 *>(&(pointer))[0])
+#define FETCH_FLOAT4(pointer) (reinterpret_cast<float4 *>(&(pointer))[0])
 
 // The main logic of this kernel is the same as 2D_block_tiling kernel,
 // except that the loading process are vectorized for acceleration purpose.
@@ -73,7 +73,8 @@ __global__ void vectorized_two_d_block_tiling_gemm_kernel(
     // loading LDG.E.128 is triggered during compilation.
     for (int load_row_A = load_row_A_start; load_row_A < BM;
          load_row_A += load_row_A_stride) {
-      float4 loaded_bytes = FLOAT4(A[OFFSET(load_row_A, load_col_A * 4, K)]);
+      float4 loaded_bytes =
+          FETCH_FLOAT4(A[OFFSET(load_row_A, load_col_A * 4, K)]);
 
       // Here A_s is transposed, so loaded column index and loaded row index
       // are shifted during saving to A_s.
@@ -85,8 +86,8 @@ __global__ void vectorized_two_d_block_tiling_gemm_kernel(
 
     for (int load_row_B = load_row_B_start; load_row_B < BK;
          load_row_B += load_row_B_stride) {
-      FLOAT4(B_s[OFFSET(load_row_B, load_col_B * 4, BN)]) =
-          FLOAT4(B[OFFSET(load_row_B, load_col_B * 4, N)]);
+      FETCH_FLOAT4(B_s[OFFSET(load_row_B, load_col_B * 4, BN)]) =
+          FETCH_FLOAT4(B[OFFSET(load_row_B, load_col_B * 4, N)]);
     }
     __syncthreads();
 
@@ -123,9 +124,9 @@ __global__ void vectorized_two_d_block_tiling_gemm_kernel(
   // The process of writing back to GMEM is also vectorized.
   for (int res_idx_M = 0; res_idx_M < TM; ++res_idx_M) {
     for (int res_idx_N = 0; res_idx_N < TN; res_idx_N += 4) {
-      FLOAT4(C[OFFSET((thread_row * TM + res_idx_M),
-                      (thread_col * TN + res_idx_N), N)]) =
-          FLOAT4(thread_results[OFFSET(res_idx_M, res_idx_N, TN)]);
+      FETCH_FLOAT4(C[OFFSET((thread_row * TM + res_idx_M),
+                            (thread_col * TN + res_idx_N), N)]) =
+          FETCH_FLOAT4(thread_results[OFFSET(res_idx_M, res_idx_N, TN)]);
     }
   }
 }
