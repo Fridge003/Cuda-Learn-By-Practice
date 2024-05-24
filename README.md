@@ -47,6 +47,7 @@ The following are each kernel's performance of running 8192x8192 GEMM on NVIDIA 
 | 4 | 1D Block Tiling                  |  `6748.6` | 50.59%                         |
 | 5 | 2D Block Tiling                  |  `9799.3` | 73.46%                         |
 | 6 | Vectorized 2D Block Tiling       | `11712.5` | 87.81%                         |
+| 7 | Double Buffering                 | `11761.1` | 88.17%                         |
 | 0 | cuBLAS                           | `13338.9` | 100.00%                        |
 <!-- benchmark_results -->
 
