@@ -4,7 +4,9 @@ When I was self-learning CUDA programming, I found that it is necessary to work 
 
 ## Usage
 
-To compile, execute following commands:
+### Compile
+
+To compile, run the following commands:
 ```bash
 mkdir build
 cd build
@@ -12,26 +14,49 @@ cmake ..
 make
 ```
 
-To run test on all gemm kernels:
+
+### List valid kernels
+
+To display the list of all valid kernels along with their ids:
+```bash
+./gemm --list-kernels
+```
+
+Valid kernels should be registered in the list `registered_kernel` in `gemm/config.h`.
+
+
+### Test correctness and performance of kernel(s)
+
+In this code repository, we provide features for testing the correctness and performance(latency) of the implemented matrix kernels. These tests need to trigger the kernel for multiple times.
+
+To do these tests, just following the steps below:
+
+First set the sizes of matrices A, B, C in variable `mnk_list` of file `./config.h`, and compile again. `mnk_list` records all the sets of sizes you want to test.
+
+Then, dependent on whether you want to test the correctness and performance on all kernels or one of them:
+
+To run tests on all GEMM kernels, execute
+
 ```bash
 DEVICE=[device_id] ./gemm
 ```
 Here the device_id of gpu is 0 by default.
 
-To run a specific gemm kernel(the kernel_idx should be an integer between 0 and kernel number):
+To run tests on one specific kerenel, execute
 ```bash
 DEVICE=[device_id] ./gemm [kernel_idx]
 ```
+Here the kernel_idx should be valid.
 
-To display the list of implemented kernels:
+
+### Trigger kernel once without testing
+
+Sometimes we only want to trigger a kernel once. For example, using nsight system to profile kernel running and find out bottlenecks.
+
+In such cases, you can trigger the kernel once through sending a flag and the sizes of matrices:
 ```bash
-./gemm -1
+DEVICE=[device_id] ./gemm --once [kernel_idx] [M] [N] [K]
 ```
-
-The list of implemented kernels are registered in the list `registered_kernel` in `gemm/config.h`.
-
-To change the shapes of matrices for testing, modify the `mnk_list` variable in `gemm/config.h` and compile again.
-
 
 
 ## Benchmark
