@@ -22,7 +22,7 @@ std::string kernel_idx_to_name(int kernel_idx) {
 }
 
 void trigger_kernel_once(const std::string &kernel_to_run, const int m,
-                         cosnt int n, const int k) {
+                         const int n, const int k) {
 
   print_border_line();
   printf("Run kernel %s: m = %d, n = %d, k = %d\n", kernel_to_run.c_str(), m, n,
@@ -70,7 +70,7 @@ void trigger_kernel_once(const std::string &kernel_to_run, const int m,
   print_border_line();
 }
 
-void run_tests(cosnt std::vector<std::string> &kernels_to_run) {
+void run_tests(const std::vector<std::string> &kernels_to_run) {
 
   for (int test_case = 0; test_case < mnk_list.size(); ++test_case) {
     print_border_line();
@@ -156,9 +156,6 @@ int main(int argc, char **argv) {
   }
   CUDA_CHECK(cudaSetDevice(deviceIdx));
 
-  // Print device information.
-  CudaDeviceInfo();
-
   // Mode 0: list valid kernels.
   if ((argc >= 2) && (std::string(argv[1]) == "--list-kernels")) {
     for (int i = 0; i < registered_kernel.size(); ++i) {
@@ -174,6 +171,7 @@ int main(int argc, char **argv) {
              "[M] [N] [K]\n");
       exit(EXIT_FAILURE);
     } else {
+      CudaDeviceInfo(); // Print device information.
       std::string kernel_to_run = kernel_idx_to_name(std::stoi(argv[2]));
       int m = std::stoi(argv[3]);
       int n = std::stoi(argv[4]);
@@ -196,7 +194,8 @@ int main(int argc, char **argv) {
            "./gemm [kernel idx] for testing one kernel.");
     exit(EXIT_FAILURE);
   }
-  run_test(collected_kernels);
+  CudaDeviceInfo(); // Print device information.
+  run_tests(collected_kernels);
 
   return 0;
 }
