@@ -12,15 +12,15 @@
 
 // The logic is as below:
 // Under current arrangement of threads (BM=BN=128, TM=TN=8, bank=32 * 4 bits),
-// the 32 threads in the same warp will a 2D area with size [2 * 8, 16 * 8] in
-// C. So each element in shared memory A_s will be shared by 16 out of 32
+// the 32 threads in the same warp will cover a 2D area with size [2 * 8, 16 *
+// 8] in C. So each element in shared memory A_s will be shared by 16 out of 32
 // threads, thus triggering the broadcast mechanism, making bank conflict in A_s
-// not so effective. However for B_s, the threads are covering a large
-// continuous area in B_s, and every other 4 threads will hit the same bank in
-// B_s, making bank conflict in B_s really effective. To avoid bank conflicts in
-// B_s, each thread will compute two TM * (TN / 2) seperate submatrices rather
-// than one TM * TN submatrix in C. In this way, the affect of bank conflicts in
-// B_s will be cut by half.
+// not so effective. However for shared memory B_s, the threads are covering a
+// large continuous area in B_s, and every other 4 threads will hit the same
+// bank in B_s, making bank conflict in B_s really effective. To avoid bank
+// conflicts in B_s, each thread will compute two TM * (TN / 2) seperate
+// submatrices rather than one TM * TN submatrix in C. In this way, the affect
+// of bank conflicts in B_s will be cut by half.
 
 template <const int BM, const int BN, const int BK, const int TM, const int TN>
 __global__ void
@@ -39,11 +39,16 @@ bank_conflict_avoiding_gemm_kernel(float *__restrict__ a, float *__restrict__ b,
   const int num_thread_col = BN / TN;
   const int num_thread_block = num_thread_row * num_thread_col;
 
-  // Current thread computes an 2D submatrix
-  // c[block_row_start + thread_row * TM: block_row_start + (thread_row + 1) *
-  // TM,
-  //   block_col_start + thread_col * TN: block_col_start + (thread_col + 1) *
-  //   TN].
+  // Current thread computes two sub-areas of c:
+  // 1. c[block_row_start + thread_row * TM: block_row_start + (thread_row + 1)
+  // * TM,
+  //   block_col_start + thread_col * (TN / 2): block_col_start + (thread_col +
+  //   1) * (TN / 2)]
+  // 2. c[block_row_start + thread_row * TM: block_row_start + (thread_row + 1)
+  // * TM,
+  //   block_col_start + (BN / 2) + thread_col * (TN / 2): block_col_start + (BN
+  //   / 2) + (thread_col + 1) * (TN / 2) ]
+  // Each area is in the shape of TM * (TN / 2)
   const int thread_row = threadIdx.x / num_thread_col;
   const int thread_col = threadIdx.x % num_thread_col;
 
@@ -116,15 +121,17 @@ bank_conflict_avoiding_gemm_kernel(float *__restrict__ a, float *__restrict__ b,
     for (int dot_idx = 0; dot_idx < BK; ++dot_idx) {
 
       // Load inputs of outer product into current buffer of tmp registers.
-      for (int tmp_idx = 0; tmp_idx < TM; ++tmp_idx) {
-        tmp_M[buffer_idx][tmp_idx] =
-            A_s[buffer_idx][OFFSET(dot_idx, (thread_row * TM + tmp_idx), BM)];
+      // Using FLOAT4 to load for the purpose of memory coalescing.
+      for (int tmp_idx = 0; tmp_idx < TM; tmp_idx += 4) {
+        FETCH_FLOAT4(tmp_M[buffer_idx][tmp_idx]) = FETCH_FLOAT4(
+            A_s[buffer_idx][OFFSET(dot_idx, (thread_row * TM + tmp_idx), BM)]);
       }
 
-      for (int tmp_idx = 0; tmp_idx < TN; ++tmp_idx) {
-        tmp_N[buffer_idx][tmp_idx] =
-            B_s[buffer_idx][OFFSET(dot_idx, (thread_col * TN + tmp_idx), BN)];
-      }
+      // Avoid Bank Conflicts: Load two seperate FLOAT4 from B_s.
+      FETCH_FLOAT4(tmp_N[buffer_idx][0]) = FETCH_FLOAT4(
+          B_s[buffer_idx][OFFSET(dot_idx, thread_col * (TN / 2), BN)]);
+      FETCH_FLOAT4(tmp_N[buffer_idx][4]) = FETCH_FLOAT4(B_s[buffer_idx][OFFSET(
+          dot_idx, (BN / 2) + thread_col * (TN / 2), BN)]);
 
       // Calculate outer product of tmp_M and tmp_N, and add it to
       // thread_results.
@@ -144,13 +151,15 @@ bank_conflict_avoiding_gemm_kernel(float *__restrict__ a, float *__restrict__ b,
     buffer_idx = 1 - buffer_idx;
   }
 
-  // Write results to C.
-  // The process of writing back to GMEM is also vectorized.
+  // Write results to C. Here each thread computes two seperate submatrices to
+  // C. So for each iteration of res_idx_M, two float4 are fetched.
   for (int res_idx_M = 0; res_idx_M < TM; ++res_idx_M) {
-    for (int res_idx_N = 0; res_idx_N < TN; res_idx_N += 4) {
-      FETCH_FLOAT4(C[OFFSET((thread_row * TM + res_idx_M),
-                            (thread_col * TN + res_idx_N), N)]) =
-          FETCH_FLOAT4(thread_results[OFFSET(res_idx_M, res_idx_N, TN)]);
-    }
+    FETCH_FLOAT4(
+        C[OFFSET((thread_row * TM + res_idx_M), thread_col * (TN / 2), N)]) =
+        FETCH_FLOAT4(thread_results[OFFSET(res_idx_M, 0, TN)]);
+
+    FETCH_FLOAT4(C[OFFSET((thread_row * TM + res_idx_M),
+                          (BN / 2) + thread_col * (TN / 2), N)]) =
+        FETCH_FLOAT4(thread_results[OFFSET(res_idx_M, 4, TN)]);
   }
 }

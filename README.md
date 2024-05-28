@@ -14,7 +14,6 @@ cmake ..
 make
 ```
 
-
 ### List valid kernels
 
 To display the list of all valid kernels along with their ids:
@@ -31,7 +30,7 @@ In this code repository, we provide features for testing the correctness and per
 
 To do these tests, just following the steps below:
 
-First set the sizes of matrices A, B, C in variable `mnk_list` of file `./config.h`, and compile again. `mnk_list` records all the sets of sizes you want to test.
+First set the sizes of matrices A, B, C in variable `mnk_list` of file `./gemm/config.h`, and compile again. `mnk_list` records all the sets of sizes you want to test.
 
 Then, dependent on whether you want to test the correctness and performance on all kernels or one of them:
 
@@ -51,11 +50,14 @@ Here the kernel_idx should be valid.
 
 ### Trigger kernel once without testing
 
-Sometimes we only want to trigger a kernel once. For example, using nsight system to profile kernel running and find out bottlenecks.
-
-In such cases, you can trigger the kernel once through sending a flag and the sizes of matrices:
+Sometimes we only want to trigger a kernel once. cks. In such cases, you can trigger the kernel once through sending a flag and the sizes of matrices:
 ```bash
 DEVICE=[device_id] ./gemm --once [kernel_idx] [M] [N] [K]
+```
+
+For example, when using nsight compute to profile a kernel, just use following command:
+```bash
+DEVICE=[device_id] ncu -o profile ./gemm --once [kernel_idx] [M] [N] [K]
 ```
 
 
@@ -85,5 +87,3 @@ The following are each kernel's performance of running 8192x8192 GEMM on NVIDIA 
 [cuda-sgemm-optimization](https://github.com/YangLinzhuo/cuda-sgemm-optimization) by [yanglinzhuo](https://github.com/YangLinzhuo)
 
 [Cuda Learning Material](https://github.com/ifromeast/cuda_learning.git) by [ifromeast](https://github.com/ifromeast)
-
-
