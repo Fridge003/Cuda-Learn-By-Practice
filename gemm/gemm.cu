@@ -132,7 +132,7 @@ void run_tests(const std::vector<std::string> &kernels_to_run) {
         continue;
 
       // Check Performance.
-      check_performance(kernel, d_A, d_B, d_C, m, n, k, 5);
+      check_performance(kernel, d_A, d_B, d_C, m, n, k, 10, 10);
     }
 
     // Free Memory.

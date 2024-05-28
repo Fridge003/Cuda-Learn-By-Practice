@@ -134,12 +134,19 @@ bool check_result_correctness(float *mat, float *mat_ref, int M, int N) {
 }
 
 void check_performance(const std::string &kernel, float *d_A, float *d_B,
-                       float *d_C, int M, int N, int K, int repeat_num = 10) {
+                       float *d_C, int M, int N, int K, int warmup_num = 10,
+                       int profile_num = 10) {
 
   float total_running_time = 0.0;
   float current_running_time = 0.0;
 
-  for (int j = 0; j < repeat_num; j++) {
+  // Do warmup.
+  for (int j = 0; j < warmup_num; ++j) {
+    run_kernel(d_A, d_B, d_C, M, N, K, kernel);
+  }
+
+  // Profile kernel.
+  for (int j = 0; j < profile_num; ++j) {
     cudaEvent_t start, end;
     cudaEventCreate(&start);
     cudaEventCreate(&end);
@@ -155,7 +162,7 @@ void check_performance(const std::string &kernel, float *d_A, float *d_B,
     total_running_time += current_running_time;
   }
 
-  double avg_latency = total_running_time / repeat_num;
+  double avg_latency = total_running_time / profile_num;
   double avg_Gflops =
       (double(M)) * N * K * 2 / 1024 / 1024 / 1024 / avg_latency * 1000;
 
