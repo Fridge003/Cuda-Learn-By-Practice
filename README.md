@@ -68,14 +68,15 @@ The following are each kernel's performance of running 8192x8192 GEMM on NVIDIA 
 <!-- benchmark_results -->
 |Idx| Kernel                           |  GFLOPs/s | Performance relative to cuBLAS |
 |:--|----------------------------------|----------:|:-------------------------------|
-| 1 | Naive                            |   `228.0` | 1.71%                          |
-| 2 | Global Memory Coalescing         |  `1836.1` | 13.77%                         |
-| 3 | Shared Memory Cache Blocking     |  `4087.8` | 30.65%                         |
-| 4 | 1D Block Tiling                  |  `6748.6` | 50.59%                         |
-| 5 | 2D Block Tiling                  |  `9799.3` | 73.46%                         |
-| 6 | Vectorized 2D Block Tiling       | `11712.5` | 87.81%                         |
-| 7 | Double Buffering                 | `11761.1` | 88.17%                         |
-| 0 | cuBLAS                           | `13338.9` | 100.00%                        |
+| 1 | Naive                            |   `228.1` | 1.73%                          |
+| 2 | Global Memory Coalescing         |  `1774.0` | 13.45%                         |
+| 3 | Shared Memory Cache Blocking     |  `3865.2` | 29.30%                         |
+| 4 | 1D Block Tiling                  |  `6531.7` | 49.51%                         |
+| 5 | 2D Block Tiling                  |  `9409.5` | 71.32%                         |
+| 6 | Vectorized 2D Block Tiling       | `11307.8` | 85.71%                         |
+| 7 | Double Buffering                 | `11444.1` | 86.74%                         |
+| 8 | Bank Conflict Avoiding           | `11780.5` | 89.29%                         |
+| 0 | cuBLAS                           | `13193.0` | 100.00%                        |
 <!-- benchmark_results -->
 
 ## Reference
