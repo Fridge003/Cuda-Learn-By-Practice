@@ -5,7 +5,7 @@
 *.cubin
 *.fatbin
 *.o
+*.log
 .vscode
 .DS_Store
 build/
-profile_results/

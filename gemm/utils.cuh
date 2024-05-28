@@ -88,7 +88,8 @@ void estimate_compute_and_IO_cost(int M, int N, int K, double compute_capacity,
   // bandwidth: bandwidth between GPU global memory and chip, in GB/s
   double total_flops = (double(M)) * N * K * 2;
   double total_data_IO_memory =
-      ((M * K) + (K * N) + (M * N)) * 4; // float dtype has 4 bytes
+      (((double)(M)*K) + (double(K) * N) + (double(M) * N)) *
+      4; // float dtype has 4 bytes
 
   printf("Amount of computation: %lf GFLOPS; Amount of memory IO: %lf MB\n",
          total_flops / (1024 * 1024 * 1024),

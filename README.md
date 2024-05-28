@@ -48,9 +48,26 @@ DEVICE=[device_id] ./gemm [kernel_idx]
 Here the kernel_idx should be valid.
 
 
+### Plot the profiling results of all kernels:
+
+First move into the build directory, and run profiling on all kernels:
+```bash
+cd ./build
+DEVICE=[device_id] ./gemm > result.log
+```
+
+Then move to the root directory of repository, execute
+```bash
+pip install -r requirements.txt
+python plot_results.py --log_path ./build/result.log --plot_path [OUTPUT_DIRECTORY]/benchmark_result.png
+```
+
+Then the plot should appear at the given output path.
+
+
 ### Trigger kernel once without testing
 
-Sometimes we only want to trigger a kernel once. cks. In such cases, you can trigger the kernel once through sending a flag and the sizes of matrices:
+Sometimes we only want to trigger a kernel once. In such cases, you can trigger the kernel once through sending a flag and the sizes of matrices:
 ```bash
 DEVICE=[device_id] ./gemm --once [kernel_idx] [M] [N] [K]
 ```
@@ -62,6 +79,11 @@ DEVICE=[device_id] ncu -o profile ./gemm --once [kernel_idx] [M] [N] [K]
 
 
 ## Benchmark
+
+Results of running GEMM on different sizes (from 128 to 16384) with each kernel:
+<!-- benchmark_plot -->
+![](./gemm/benchmark_result.png)
+<!-- benchmark_plot -->
 
 The following are each kernel's performance of running 8192x8192 GEMM on NVIDIA Tesla V100-PCIE-32GB with 16.4 TFLOPS computing capacity:
 
