@@ -80,12 +80,12 @@ DEVICE=[device_id] ncu -o profile ./gemm --once [kernel_idx] [M] [N] [K]
 
 ## Benchmark
 
-Results of running GEMM on different sizes (from 128 to 16384) with each kernel:
+Results of each kernel running GEMM in different sizes (from 128 to 16384) on NVIDIA Tesla V100-PCIE-32GB:
 <!-- benchmark_plot -->
 ![](./gemm/benchmark_result.png)
 <!-- benchmark_plot -->
 
-The following are each kernel's performance of running 8192x8192 GEMM on NVIDIA Tesla V100-PCIE-32GB with 16.4 TFLOPS computing capacity:
+The following are each kernel's performance of running 8192x8192 GEMM on Nvidia Tesla V100-PCIE-32GB:
 
 <!-- benchmark_results -->
 |Idx| Kernel                           |  GFLOPs/s | Performance relative to cuBLAS |
@@ -102,6 +102,15 @@ The following are each kernel's performance of running 8192x8192 GEMM on NVIDIA 
 <!-- benchmark_results -->
 
 ## Reference
+
+### Nvidia Documents
+[Cuda C++ Programming Guide](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html)
+
+[Cuda C++ Best Practices Guide](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/)
+
+[Nvidia Cutlass Blog](https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/)
+
+### Github Projects
 
 [SGEMM_CUDA](https://github.com/siboehm/SGEMM_CUDA) by [siboehm](https://github.com/siboehm) (This tutorial is really awesome!)
 
