@@ -20,22 +20,23 @@ one_d_block_tiling_gemm_kernel(float *__restrict__ a, float *__restrict__ b,
                                const int K) {
 
   // Current block is responsible for the calculation of submatrix
-  // c[block_row_start: block_row_start + BM, block_col_start: block_col_start +
-  // BN].
-  const int block_row_start = blockIdx.x * BM;
-  const int block_col_start = blockIdx.y * BN;
-
-  // Current thread computes an 1D submatrix
-  // c[block_row_start + thread_row * TM: block_row_start + (thread_row + 1) *
-  // TM, block_col_start + thread_col].
-  const int thread_row = threadIdx.x / BN;
-  const int thread_col = threadIdx.x % BN;
+  // c[block_row_offset: block_row_offset + BM, block_col_offset:
+  // block_col_offset + BN].
+  const int block_row_offset = blockIdx.x * BM;
+  const int block_col_offset = blockIdx.y * BN;
 
   // Advance pointer A, B, C to the starter position of submatrix.
+  // So the position of block can be transparent.
   float *A = a, *B = b, *C = c;
-  A += OFFSET(block_row_start, 0, K);
-  B += OFFSET(0, block_col_start, N);
-  C += OFFSET(block_row_start, block_col_start, N);
+  A += OFFSET(block_row_offset, 0, K);
+  B += OFFSET(0, block_col_offset, N);
+  C += OFFSET(block_row_offset, block_col_offset, N);
+
+  // Current thread computes an 1D submatrix
+  // c[block_row_offset + thread_row * TM: block_row_offset + (thread_row + 1) *
+  // TM, block_col_offset + thread_col].
+  const int thread_row = threadIdx.x / BN;
+  const int thread_col = threadIdx.x % BN;
 
   // The positions of elements in A and B to fetch from global memory to shared
   // memory.

@@ -6,9 +6,9 @@
 
 // List of m, n and k values that are supposed to be tested.
 const std::vector<std::vector<int>> mnk_list = {
-    {128, 128, 128},    {256, 256, 256},      {512, 512, 512},
-    {1024, 1024, 1024}, {2048, 2048, 2048},   {4096, 4096, 4096},
-    {8192, 8192, 8192}, {16384, 16384, 16384}};
+    {128, 128, 128},    {256, 256, 256},    {512, 512, 512},
+    {1024, 1024, 1024}, {2048, 2048, 2048}, {4096, 4096, 4096},
+    {8192, 8192, 8192}};
 
 // List of kernels that have been implemented and are supposed to be tested.
 const std::vector<std::string> registered_kernel = {

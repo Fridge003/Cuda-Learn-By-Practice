@@ -13,22 +13,23 @@ __global__ void shared_memory_cache_blocking_gemm_kernel(
     const int M, const int N, const int K) {
 
   // Current block is responsible for the calculation of submatrix
-  // c[block_row_start: block_row_start + BLOCKSIZE, block_col_start:
-  // block_col_start + BLOCKSIZE].
-  const int block_row_start = blockIdx.x * BLOCKSIZE;
-  const int block_col_start = blockIdx.y * BLOCKSIZE;
+  // c[block_row_offset: block_row_offset + BLOCKSIZE, block_col_offset:
+  // block_col_offset + BLOCKSIZE].
+  const int block_row_offset = blockIdx.x * BLOCKSIZE;
+  const int block_col_offset = blockIdx.y * BLOCKSIZE;
 
   // Each thread computes one element of c.
-  // Current thread computes c[block_row_start + thread_row, block_col_start +
+  // Current thread computes c[block_row_offset + thread_row, block_col_offset +
   // thread_col].
   int thread_row = threadIdx.x / BLOCKSIZE;
   int thread_col = threadIdx.x % BLOCKSIZE;
 
   // Advance pointer A, B, C to the starter position of submatrix.
+  // So the position of block can be transparent.
   float *A = a, *B = b, *C = c;
-  A += OFFSET(block_row_start, 0, K);
-  B += OFFSET(0, block_col_start, N);
-  C += OFFSET(block_row_start, block_col_start, N);
+  A += OFFSET(block_row_offset, 0, K);
+  B += OFFSET(0, block_col_offset, N);
+  C += OFFSET(block_row_offset, block_col_offset, N);
 
   // Allocate shared memory.
   __shared__ float A_s[BLOCKSIZE * BLOCKSIZE];

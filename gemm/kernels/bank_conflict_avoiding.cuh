@@ -29,10 +29,17 @@ bank_conflict_avoiding_gemm_kernel(float *__restrict__ a, float *__restrict__ b,
                                    const int N, const int K) {
 
   // Current block is responsible for the calculation of submatrix
-  // c[block_row_start: block_row_start + BM, block_col_start: block_col_start +
-  // BN].
-  const int block_row_start = blockIdx.x * BM;
-  const int block_col_start = blockIdx.y * BN;
+  // c[block_row_offset: block_row_offset + BM, block_col_offset:
+  // block_col_offset + BN].
+  const int block_row_offset = blockIdx.x * BM;
+  const int block_col_offset = blockIdx.y * BN;
+
+  // Advance pointer A, B, C to the starter position of submatrix.
+  // So the position of block can be transparent.
+  float *A = a, *B = b, *C = c;
+  A += OFFSET(block_row_offset, 0, K);
+  B += OFFSET(0, block_col_offset, N);
+  C += OFFSET(block_row_offset, block_col_offset, N);
 
   // Number of threads in each row/col of block.
   const int num_thread_row = BM / TM;
@@ -40,23 +47,19 @@ bank_conflict_avoiding_gemm_kernel(float *__restrict__ a, float *__restrict__ b,
   const int num_thread_block = num_thread_row * num_thread_col;
 
   // Current thread computes two sub-areas of c:
-  // 1. c[block_row_start + thread_row * TM: block_row_start + (thread_row + 1)
+  // 1. c[block_row_offset + thread_row * TM: block_row_offset + (thread_row +
+  // 1)
   // * TM,
-  //   block_col_start + thread_col * (TN / 2): block_col_start + (thread_col +
-  //   1) * (TN / 2)]
-  // 2. c[block_row_start + thread_row * TM: block_row_start + (thread_row + 1)
+  //   block_col_offset + thread_col * (TN / 2): block_col_offset + (thread_col
+  //   + 1) * (TN / 2)]
+  // 2. c[block_row_offset + thread_row * TM: block_row_offset + (thread_row +
+  // 1)
   // * TM,
-  //   block_col_start + (BN / 2) + thread_col * (TN / 2): block_col_start + (BN
-  //   / 2) + (thread_col + 1) * (TN / 2) ]
+  //   block_col_offset + (BN / 2) + thread_col * (TN / 2): block_col_offset +
+  //   (BN / 2) + (thread_col + 1) * (TN / 2) ]
   // Each area is in the shape of TM * (TN / 2)
   const int thread_row = threadIdx.x / num_thread_col;
   const int thread_col = threadIdx.x % num_thread_col;
-
-  // Advance pointer A, B, C to the starter position of submatrix.
-  float *A = a, *B = b, *C = c;
-  A += OFFSET(block_row_start, 0, K);
-  B += OFFSET(0, block_col_start, N);
-  C += OFFSET(block_row_start, block_col_start, N);
 
   // Allocate shared memory.
   // Here both A_s and B_s contain two buffers, and two neighboring loops use
@@ -83,8 +86,8 @@ bank_conflict_avoiding_gemm_kernel(float *__restrict__ a, float *__restrict__ b,
   float thread_results[TM * TN] = {0.0};
 
   // Allocate registers for caches. Each caches also contain two buffers.
-  float tmp_M[2][TM] = {0.0};
-  float tmp_N[2][TN] = {0.0};
+  float reg_M[2][TM] = {0.0};
+  float reg_N[2][TN] = {0.0};
 
   // The outer loop goes through rows of A and columns of B.
   int buffer_idx = 0;
@@ -122,23 +125,23 @@ bank_conflict_avoiding_gemm_kernel(float *__restrict__ a, float *__restrict__ b,
 
       // Load inputs of outer product into current buffer of tmp registers.
       // Using FLOAT4 to load for the purpose of memory coalescing.
-      for (int tmp_idx = 0; tmp_idx < TM; tmp_idx += 4) {
-        FETCH_FLOAT4(tmp_M[buffer_idx][tmp_idx]) = FETCH_FLOAT4(
-            A_s[buffer_idx][OFFSET(dot_idx, (thread_row * TM + tmp_idx), BM)]);
+      for (int reg_idx = 0; reg_idx < TM; reg_idx += 4) {
+        FETCH_FLOAT4(reg_M[buffer_idx][reg_idx]) = FETCH_FLOAT4(
+            A_s[buffer_idx][OFFSET(dot_idx, (thread_row * TM + reg_idx), BM)]);
       }
 
       // Avoid Bank Conflicts: Load two seperate FLOAT4 from B_s.
-      FETCH_FLOAT4(tmp_N[buffer_idx][0]) = FETCH_FLOAT4(
+      FETCH_FLOAT4(reg_N[buffer_idx][0]) = FETCH_FLOAT4(
           B_s[buffer_idx][OFFSET(dot_idx, thread_col * (TN / 2), BN)]);
-      FETCH_FLOAT4(tmp_N[buffer_idx][4]) = FETCH_FLOAT4(B_s[buffer_idx][OFFSET(
+      FETCH_FLOAT4(reg_N[buffer_idx][4]) = FETCH_FLOAT4(B_s[buffer_idx][OFFSET(
           dot_idx, (BN / 2) + thread_col * (TN / 2), BN)]);
 
-      // Calculate outer product of tmp_M and tmp_N, and add it to
+      // Calculate outer product of reg_M and reg_N, and add it to
       // thread_results.
       for (int res_idx_M = 0; res_idx_M < TM; ++res_idx_M) {
         for (int res_idx_N = 0; res_idx_N < TN; ++res_idx_N) {
           thread_results[OFFSET(res_idx_M, res_idx_N, TN)] +=
-              tmp_M[buffer_idx][res_idx_M] * tmp_N[buffer_idx][res_idx_N];
+              reg_M[buffer_idx][res_idx_M] * reg_N[buffer_idx][res_idx_N];
         }
       }
     }
