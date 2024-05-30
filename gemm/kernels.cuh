@@ -8,3 +8,4 @@
 #include "kernels/naive.cuh"
 #include "kernels/shared_memory_cache_blocking.cuh"
 #include "kernels/vectorized_2D_block_tiling.cuh"
+#include "kernels/warp_tiling.cuh"

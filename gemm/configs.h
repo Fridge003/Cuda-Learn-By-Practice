@@ -20,7 +20,8 @@ const std::vector<std::string> registered_kernel = {
     "2D_block_tiling",
     "vectorized_2D_block_tiling",
     "double_buffering",
-    "bank_conflict_avoiding"};
+    "bank_conflict_avoiding",
+    "warp_tiling"};
 
 // Parameters of V100 for PCIe
 // const double device_fp32_compute_capacity_tflops = 14.0;

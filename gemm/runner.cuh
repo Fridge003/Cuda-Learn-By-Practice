@@ -132,6 +132,39 @@ void run_bank_conflict_avoiding_kernel(float *A, float *B, float *C, int m,
       <<<grid_size, block_size>>>(A, B, C, m, n, k);
 }
 
+void warp_tiling_kernel(float *A, float *B, float *C, int m, int n, int k) {
+
+  const int BM = 128;
+  const int BN = 128;
+  const int BK = 16;
+  const int WM_OUT = 64;
+  const int WN_OUT = 64;
+  const int WM_IN = 64;
+  const int WN_IN = 16;
+  const int TM = 8;
+  const int TN = 4;
+  const int THREAD_NUM = 128;
+  const int WARP_SIZE = 32;
+
+  // Assertions for warp tiling to work.
+  assert((BM % WM_OUT == 0) && (BN % WN_OUT == 0));
+  assert((WM_OUT % WM_IN == 0) && (WN_OUT % WN_IN == 0));
+  assert((WM_IN % TM == 0) && (WN_IN % TN == 0));
+  assert((THREAD_NUM / WARP_SIZE) == ((BM / WM_OUT) * (BN / WN_OUT)));
+  assert((WARP_SIZE * TM * TN) == (WM_IN * WN_IN));
+
+  // Assertions for vectorization.
+  assert(BK % 4 == 0);
+  assert(BN % 4 == 0);
+  assert(TN % 4 == 0);
+
+  dim3 grid_size(CEIL_DIV(m, BM), CEIL_DIV(n, BN));
+  dim3 block_size(THREAD_NUM);
+  bank_conflict_avoiding_gemm_kernel<BM, BN, BK, WM_OUT, WN_OUT, WM_IN, WN_IN,
+                                     TM, TN>
+      <<<grid_size, block_size>>>(A, B, C, m, n, k);
+}
+
 bool run_kernel(float *A, float *B, float *C, int m, int n, int k,
                 const std::string &kernel) {
 
@@ -179,6 +212,11 @@ bool run_kernel(float *A, float *B, float *C, int m, int n, int k,
 
   if (kernel == "bank_conflict_avoiding") {
     run_bank_conflict_avoiding_kernel(A, B, C, m, n, k);
+    valid_kernel = true;
+  }
+
+  if (kernel == "warp_tiling") {
+    run_warp_tiling_kernel(A, B, C, m, n, k);
     valid_kernel = true;
   }
 
