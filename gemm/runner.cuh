@@ -134,14 +134,17 @@ void run_bank_conflict_avoiding_kernel(float *A, float *B, float *C, int m,
 
 void run_warp_tiling_kernel(float *A, float *B, float *C, int m, int n, int k) {
 
+  // Following parameters may be tuned to achieve better performance.
+  // The limitation of registers is significant in V100, so I set TM and TN to 4
+  // to reduce registers used per thread.
   const int BM = 128;
   const int BN = 128;
   const int BK = 16;
   const int WM_OUT = 64;
   const int WN_OUT = 64;
-  const int WM_IN = 64;
-  const int WN_IN = 16;
-  const int TM = 8;
+  const int WM_IN = 16;
+  const int WN_IN = 32;
+  const int TM = 4;
   const int TN = 4;
   const int THREAD_NUM = 128;
   const int WARP_SIZE = 32;

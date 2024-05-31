@@ -13,18 +13,6 @@ matplotlib.rcParams["font.family"] = "monospace"
 matplotlib.rcParams["figure.dpi"] = 200
 plt.rcParams["savefig.facecolor"] = "white"
 
-KERNEL_NAMES = {
-    0: "cublas",
-    1: "naive",
-    2: "global_memory_coalescing",
-    3: "shared_memory_cache_blocking",
-    4: "1D_block_tiling",
-    5: "2D_block_tiling",
-    6: "vectorized_2D_block_tiling",
-    7: "double_buffering",
-    8: "bank_conflict_avoiding",
-}
-
 
 def parse_file(file):
 
@@ -88,7 +76,7 @@ def plot(df, output_path):
         plt.text(
             df[df["kernel"] == kernel]["size"].iloc[-1],
             df[df["kernel"] == kernel]["gflops"].iloc[-1] + 300,
-            f"{i}:{KERNEL_NAMES[i]}",
+            f"{i}:{kernel}",
             color=colors[i],
             horizontalalignment="left",
             weight="medium",

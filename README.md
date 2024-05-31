@@ -85,20 +85,21 @@ Results of each kernel running GEMM in different sizes (from 128 to 16384) on NV
 ![](./gemm/benchmark_result.png)
 <!-- benchmark_plot -->
 
-The following are each kernel's performance of running 8192x8192 GEMM on Nvidia Tesla V100-PCIE-32GB:
+The following are each kernel's performance of running 4096x4096 GEMM on Nvidia Tesla V100-PCIE-32GB:
 
 <!-- benchmark_results -->
 |Idx| Kernel                           |  GFLOPs/s | Performance relative to cuBLAS |
 |:--|----------------------------------|----------:|:-------------------------------|
-| 1 | Naive                            |   `228.1` | 1.73%                          |
-| 2 | Global Memory Coalescing         |  `1774.0` | 13.45%                         |
-| 3 | Shared Memory Cache Blocking     |  `3865.2` | 29.30%                         |
-| 4 | 1D Block Tiling                  |  `6531.7` | 49.51%                         |
-| 5 | 2D Block Tiling                  |  `9409.5` | 71.32%                         |
-| 6 | Vectorized 2D Block Tiling       | `11307.8` | 85.71%                         |
-| 7 | Double Buffering                 | `11444.1` | 86.74%                         |
-| 8 | Bank Conflict Avoiding           | `11780.5` | 89.29%                         |
-| 0 | cuBLAS                           | `13193.0` | 100.00%                        |
+| 1 | Naive                            |   `228.7` | 1.77%                          |
+| 2 | Global Memory Coalescing         |  `1812.6` | 14.05%                         |
+| 3 | Shared Memory Cache Blocking     |  `4045.3` | 31.40%                         |
+| 4 | 1D Block Tiling                  |  `7399.9` | 57.36%                         |
+| 5 | 2D Block Tiling                  |  `9571.4` | 74.20%                         |
+| 6 | Vectorized 2D Block Tiling       | `11228.9` | 87.05%                         |
+| 7 | Double Buffering                 | `11722.1` | 90.87%                         |
+| 8 | Bank Conflict Avoiding           | `12025.9` | 93.23%                         |
+| 9 | Warp Tiling                      | `12498.6` | 96.89%                         |
+| 0 | cuBLAS                           | `12899.8` | 100.00%                        |
 <!-- benchmark_results -->
 
 ## Reference
