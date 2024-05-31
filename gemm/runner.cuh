@@ -132,7 +132,7 @@ void run_bank_conflict_avoiding_kernel(float *A, float *B, float *C, int m,
       <<<grid_size, block_size>>>(A, B, C, m, n, k);
 }
 
-void warp_tiling_kernel(float *A, float *B, float *C, int m, int n, int k) {
+void run_warp_tiling_kernel(float *A, float *B, float *C, int m, int n, int k) {
 
   const int BM = 128;
   const int BN = 128;
@@ -160,8 +160,7 @@ void warp_tiling_kernel(float *A, float *B, float *C, int m, int n, int k) {
 
   dim3 grid_size(CEIL_DIV(m, BM), CEIL_DIV(n, BN));
   dim3 block_size(THREAD_NUM);
-  bank_conflict_avoiding_gemm_kernel<BM, BN, BK, WM_OUT, WN_OUT, WM_IN, WN_IN,
-                                     TM, TN>
+  warp_tiling_gemm_kernel<BM, BN, BK, WM_OUT, WN_OUT, WM_IN, WN_IN, TM, TN>
       <<<grid_size, block_size>>>(A, B, C, m, n, k);
 }
 

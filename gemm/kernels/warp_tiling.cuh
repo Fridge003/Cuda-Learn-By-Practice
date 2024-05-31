@@ -1,34 +1,36 @@
 #pragma once
 
 #include <cuda_runtime.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #define OFFSET(row, col, ld) ((row) * (ld) + (col))
 #define FETCH_FLOAT4(pointer) (reinterpret_cast<float4 *>(&(pointer))[0])
 
-const int warp_size = 32
+const int warp_size = 32;
 
-    // This kernel implements warp-tiling on the basis of double_buffering
-    // kernel. Warp tiling technique makes 32 threads in the same warp compute
-    // a submatrix of c, thus enhancing locality and avoiding bank conflicts.
+// This kernel implements warp-tiling on the basis of double_buffering
+// kernel. Warp tiling technique makes 32 threads in the same warp compute
+// a submatrix of c, thus enhancing locality and avoiding bank conflicts.
 
-    // The detailed idea is explained in Nvidia Cutlass Blog:
-    // https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/
+// The detailed idea is explained in Nvidia Cutlass Blog:
+// https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/
 
-    // BM, BN, BK: Size of tiling at block level. Size of SMEM: 2 (double
-    // buffering) * BK * BM/BN. WM_OUT, WN_OUT: Size of tiling at warp level.
-    // Each warp computes an area with WM_OUT * WN_OUT elements. WM_IN, WN_IN:
-    // During computation, every warp will go through a double loop to fully
-    //               reuse the contents of registers reg_M/reg_N; Inside each
-    //               loop, a WM_IN * WN_IN area is covered.
-    // TM, TN: Size of tiling at thread level. Each thread computes TM * TN
-    // area.
-    template <const int BM, const int BN, const int BK, const int WM_OUT,
-              const int WN_OUT, const int WM_IN, const int WN_IN, const int TM,
-              const int TN>
-    __global__ void warp_tiling_gemm_kernel(
-        float *__restrict__ a, float *__restrict__ b, float *__restrict__ c,
-        const int M, const int N, const int K) {
+// BM, BN, BK: Size of tiling at block level. Size of SMEM: 2 (double
+// buffering) * BK * BM/BN. WM_OUT, WN_OUT: Size of tiling at warp level.
+// Each warp computes an area with WM_OUT * WN_OUT elements. WM_IN, WN_IN:
+// During computation, every warp will go through a double loop to fully
+//               reuse the contents of registers reg_M/reg_N; Inside each
+//               loop, a WM_IN * WN_IN area is covered.
+// TM, TN: Size of tiling at thread level. Each thread computes TM * TN
+// area.
+template <const int BM, const int BN, const int BK, const int WM_OUT,
+          const int WN_OUT, const int WM_IN, const int WN_IN, const int TM,
+          const int TN>
+__global__ void warp_tiling_gemm_kernel(float *__restrict__ a,
+                                        float *__restrict__ b,
+                                        float *__restrict__ c, const int M,
+                                        const int N, const int K) {
 
   // Current block is responsible for the calculation of submatrix
   // c[block_row_offset: block_row_offset + BM, block_col_offset:
@@ -43,17 +45,11 @@ const int warp_size = 32
   B += OFFSET(0, block_col_offset, N);
   C += OFFSET(block_row_offset, block_col_offset, N);
 
-  // Number of warps at each row/col of block.
-  // Here num_warp_block * 32 should equals to num_thread_block.
-  const int num_warp_row = BM / WM_OUT;
-  const int num_warp_col = BN / WM_OUT;
-  const int num_warp_block = num_warp_row * num_warp_col;
-  const int num_thread_block = blockDim.x;
-
   // Current warp is responsible for the calculation of submatrix:
   // C[warp_row * WM_OUT: (warp_row + 1) * WM_OUT,
   //   warp_col * WN_OUT: (warp_col + 1) * WN_OUT].
   const int current_warp_idx = threadIdx.x / warp_size;
+  const int num_warp_col = BN / WN_OUT;
   const int warp_col = current_warp_idx % num_warp_col;
   const int warp_row = current_warp_idx / num_warp_col;
 
@@ -62,8 +58,7 @@ const int warp_size = 32
   constexpr int num_warp_iter_col = WN_OUT / WN_IN;
 
   // Postion of each thread inside warp.
-  const int num_thread_row_in_warp = WM_IN / TM;
-  const int num_thread_col_in_warp = WM_IN / TN;
+  const int num_thread_col_in_warp = WN_IN / TN;
   const int current_thread_idx_in_warp = threadIdx.x % warp_size;
   const int thread_col_in_warp =
       current_thread_idx_in_warp % num_thread_col_in_warp;
@@ -75,6 +70,8 @@ const int warp_size = 32
   __shared__ float B_s[2][BK * BN];
 
   // The scheme of loading from GMEM to SMEM doesn't need to change.
+  const int num_thread_block = blockDim.x;
+
   const int load_col_A = threadIdx.x % (BK / 4);
   const int load_row_A_start = threadIdx.x / (BK / 4);
   const int num_load_A_per_thread = BM * BK / num_thread_block / 4;
