@@ -77,6 +77,35 @@ For example, when using nsight compute to profile a kernel, just use following c
 DEVICE=[device_id] ncu -o profile ./gemm --once [kernel_idx] [M] [N] [K]
 ```
 
+### Add a new kernel
+
+This framework supports flexible addition of newly implemented GEMM kernels. Suppose the name of new kernel is `kenrel_x`, and the cuda header file containing the implementation is `kernel_x.cuh`.
+
+Step 1: Put the `kernel_x.cuh` under the folder `gemm/kernels`.
+
+Step 2: Include `kernel_x.cuh` in `gemm/kernels.cuh`.
+
+Step 3:  In `gemm/runner.cuh`, add a new runner function `run_kernel_x_gemm` that launches the kernel properly.
+
+Step 4: In `gemm/runner.cuh`, register the new kernel in function `run_kernel` by inserting following codes:
+```C++
+bool run_kernel(...) {
+    ...
+    if (kernel == "kernel_x") {
+        run_kernel_x_gemm(A, B, C, m, n, k);
+        valid_kernel = true;
+    }
+    ...
+}
+```
+
+Step 5: In `gemm/configs.h`, register the new kernel through appending "kernel_x" to the list `registered_kernel`.
+
+
+Now you can trigger the kernel through either way described above.
+
+
+
 
 ## Benchmark
 
