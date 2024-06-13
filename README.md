@@ -2,9 +2,7 @@
 
 When I was self-learning CUDA programming, I found that it is necessary to work under an environment that manages and compiles the kernels in an efficient way. So I built up this repository under the inspiration of several other repositories on github, especially [SGEMM_CUDA](https://github.com/siboehm/SGEMM_CUDA).
 
-## Usage
-
-### Compile
+## Compile
 
 To compile, run the following commands:
 ```bash
@@ -13,6 +11,10 @@ cd build
 cmake ..
 make
 ```
+<!--
+There should be several executable files under the `build` folder, including `gemm`. -->
+
+## GEMM Usage
 
 ### List valid kernels
 
@@ -109,6 +111,9 @@ Now you can trigger the kernel through either way described above.
 
 ## Benchmark
 
+
+### GEMM
+
 Results of each kernel running GEMM in different sizes (from 128 to 16384) on NVIDIA Tesla V100-PCIE-32GB:
 <!-- benchmark_plot -->
 ![](./gemm/benchmark_result.png)
@@ -140,6 +145,8 @@ The following are each kernel's performance of running 4096x4096 GEMM on Nvidia 
 
 [Nvidia Cutlass Blog](https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/)
 
+[Optimizing Parallel Reduction in Cuda](https://developer.download.nvidia.cn/assets/cuda/files/reduction.pdf)
+
 ### Github Projects
 
 [SGEMM_CUDA](https://github.com/siboehm/SGEMM_CUDA) by [siboehm](https://github.com/siboehm) (This tutorial is really awesome!)
@@ -149,3 +156,8 @@ The following are each kernel's performance of running 4096x4096 GEMM on Nvidia 
 [cuda-sgemm-optimization](https://github.com/YangLinzhuo/cuda-sgemm-optimization) by [yanglinzhuo](https://github.com/YangLinzhuo)
 
 [Cuda Learning Material](https://github.com/ifromeast/cuda_learning.git) by [ifromeast](https://github.com/ifromeast)
+
+[How_to_optimize_in_GPU](https://github.com/Liu-xiandong/How_to_optimize_in_GPU) by [Liu-xiandong](https://github.com/Liu-xiandong)
+
+[how-to-optim-algorithm-in-cuda](https://github.com/BBuf/how-to-optim-algorithm-in-cuda) by [BBuf](https://github.com/BBuf)
+
