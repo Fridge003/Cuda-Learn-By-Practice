@@ -9,12 +9,18 @@ To compile, run the following commands:
 mkdir build
 cd build
 cmake ..
-make
+make [task_name]
 ```
-<!--
-There should be several executable files under the `build` folder, including `gemm`. -->
 
-## GEMM Usage
+Here the argument `task_name` refers to the task to run on. For example, if you want to generate kernels on GEMM matrix multiplication, then execute
+```bash
+make gemm
+```
+during making.
+
+Currently implemented tasks include [`gemm`], and `task_name` should be one of them.
+
+## Usage of GEMM Kernels
 
 ### List valid kernels
 
@@ -114,7 +120,7 @@ Now you can trigger the kernel through either way described above.
 
 ### GEMM
 
-Results of each kernel running GEMM in different sizes (from 128 to 16384) on NVIDIA Tesla V100-PCIE-32GB:
+Results of each kernel running GEMM in different sizes (from 128 to 16384) on NVIDIA Tesla V100-PCIE-32GB with 16.4 TFLOPS computing capacity:
 <!-- benchmark_plot -->
 ![](./gemm/benchmark_result.png)
 <!-- benchmark_plot -->
@@ -144,6 +150,8 @@ The following are each kernel's performance of running 4096x4096 GEMM on Nvidia 
 [Cuda C++ Best Practices Guide](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/)
 
 [Nvidia Cutlass Blog](https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/)
+
+[Matrix Multiplication Background User's Guide](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html)
 
 [Optimizing Parallel Reduction in Cuda](https://developer.download.nvidia.cn/assets/cuda/files/reduction.pdf)
 
