@@ -18,7 +18,7 @@ set_target_properties(gemm PROPERTIES CUDA_ARCHITECTURES ${CUDA_COMPUTE_CAPABILI
 target_link_libraries(gemm ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES})
 
 # generate executable for reduce kernels
-# aux_source_directory(${PROJECT_SOURCE_DIR}/reduce REDUCE_SRC)
-# add_executable(reduce ${PROJECT_SOURCE_DIR}/reduce/reduce.cu ${REDUCE_SRC})
-# set_target_properties(reduce PROPERTIES CUDA_ARCHITECTURES ${CUDA_COMPUTE_CAPABILITY})
-# target_link_libraries(reduce ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES})
+aux_source_directory(${PROJECT_SOURCE_DIR}/reduce REDUCE_SRC)
+add_executable(reduce ${PROJECT_SOURCE_DIR}/reduce/reduce.cu ${REDUCE_SRC})
+set_target_properties(reduce PROPERTIES CUDA_ARCHITECTURES ${CUDA_COMPUTE_CAPABILITY})
+target_link_libraries(reduce ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES})

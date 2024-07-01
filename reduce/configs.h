@@ -8,7 +8,7 @@
 const int block_size = 256;
 
 // List of n(length of reduced array) to be tested.
-const std::vector<int> n_list = {1e8};
+const std::vector<int> n_list = {10000000};
 
 // List of kernels that have been implemented and are supposed to be tested.
 const std::vector<std::string> registered_kernel = {"baseline"};

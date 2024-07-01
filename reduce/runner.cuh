@@ -20,7 +20,7 @@ double run_cpu_reduce(float *arr, int n) {
 
 void run_baseline_reduce(float *d_in, float *d_out, int n, int block_size) {
   int grid_size = CEIL_DIV(n, block_size);
-  naive_gemm_kernel<<<grid_size, block_size>>>(d_in, d_out, n);
+  baseline_reduce_kernel<<<grid_size, block_size>>>(d_in, d_out, n);
 }
 
 bool run_kernel(float *d_in, float *d_out, int n, int block_size,
@@ -29,7 +29,7 @@ bool run_kernel(float *d_in, float *d_out, int n, int block_size,
   bool valid_kernel = false;
 
   if (kernel == "baseline") {
-    run_naive_reduce(d_in, d_out, n, block_size);
+    run_baseline_reduce(d_in, d_out, n, block_size);
     valid_kernel = true;
   }
 

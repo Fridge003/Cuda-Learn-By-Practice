@@ -33,7 +33,7 @@ void trigger_kernel_once(const std::string &kernel_to_run, const int n) {
   size_t n_block = (n + block_size - 1) / block_size;
   size_t size_out = n_block * sizeof(float);
 
-  float *h_in, *h_out, *d_in *d_out;
+  float *h_in, *h_out, *d_in, *d_out;
   h_in = (float *)malloc(size_in);
   h_out = (float *)malloc(size_out);
   CUDA_CHECK(cudaMalloc(&d_in, size_in));
@@ -41,7 +41,7 @@ void trigger_kernel_once(const std::string &kernel_to_run, const int n) {
 
   // Initialize the arrays and copy them to device.
   randomize_array(h_in, n);
-  zero_init_array(h_out, n);
+  zero_init_array(h_out, n_block);
   CUDA_CHECK(cudaMemcpy(d_in, h_in, size_in, cudaMemcpyHostToDevice));
   CUDA_CHECK(cudaMemcpy(d_out, h_out, size_out, cudaMemcpyHostToDevice));
 
@@ -55,7 +55,8 @@ void trigger_kernel_once(const std::string &kernel_to_run, const int n) {
 
   // Free Memory.
   free(h_in);
-  free(h_out) CUDA_CHECK(cudaFree(d_in));
+  free(h_out);
+  CUDA_CHECK(cudaFree(d_in));
   CUDA_CHECK(cudaFree(d_out));
 
   print_border_line();
@@ -80,7 +81,7 @@ void run_tests(const std::vector<std::string> &kernels_to_run) {
     size_t n_block = (n + block_size - 1) / block_size;
     size_t size_out = n_block * sizeof(float);
 
-    float *h_in, *h_out, *d_in *d_out;
+    float *h_in, *h_out, *d_in, *d_out;
     h_in = (float *)malloc(size_in);
     h_out = (float *)malloc(size_out);
     CUDA_CHECK(cudaMalloc(&d_in, size_in));
@@ -98,11 +99,11 @@ void run_tests(const std::vector<std::string> &kernels_to_run) {
       printf("\nKernel: %s\n", kernel.c_str());
 
       // Clean the output array and copy it to device.
-      zero_init_array(h_out, n);
+      zero_init_array(h_out, n_block);
       CUDA_CHECK(cudaMemcpy(d_out, h_out, size_out, cudaMemcpyHostToDevice));
 
       // Check kernel validity.
-      bool valid_kernel = run_kernel(d_in, d_out, n, block_size, kernel_to_run);
+      bool valid_kernel = run_kernel(d_in, d_out, n, block_size, kernel);
       if (!valid_kernel)
         continue;
 
