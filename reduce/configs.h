@@ -5,10 +5,10 @@
 #include <vector>
 
 // Number of threads per block.
-const int block_size = 256;
+const int block_size = 512;
 
 // List of n(length of reduced array) to be tested.
-const std::vector<int> n_list = {10000000};
+const std::vector<int> n_list = {100000000};
 
 // List of kernels that have been implemented and are supposed to be tested.
 const std::vector<std::string> registered_kernel = {"baseline",

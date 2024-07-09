@@ -87,15 +87,14 @@ bool check_result_correctness(float *arr, double sum_ref, int arr_len) {
 }
 
 void check_performance(const std::string &kernel, float *d_in, float *d_out,
-                       int N, int block_size, int warmup_num = 10,
-                       int profile_num = 10) {
+                       int N, int warmup_num = 10, int profile_num = 10) {
 
   float total_running_time = 0.0;
   float current_running_time = 0.0;
 
   // Do warmup.
   for (int j = 0; j < warmup_num; ++j) {
-    run_kernel(d_in, d_out, N, block_size, kernel);
+    run_kernel(d_in, d_out, N, kernel);
   }
 
   // Profile kernel.
@@ -105,7 +104,7 @@ void check_performance(const std::string &kernel, float *d_in, float *d_out,
     cudaEventCreate(&end);
     cudaEventRecord(start, 0);
 
-    run_kernel(d_in, d_out, N, block_size, kernel);
+    run_kernel(d_in, d_out, N, kernel);
     cudaDeviceSynchronize();
 
     cudaEventRecord(end, 0);

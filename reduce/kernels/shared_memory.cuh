@@ -6,6 +6,7 @@
 // Based on the baseline kernel, current kernel will first fetch the elements
 // to shared memory before doing any reduction. In this way, the latency of
 // accessing memory will be greatly decreased.
+template <const int BLOCKSIZE>
 __global__ void shared_memory_reduce_kernel(float *d_in, float *d_out,
                                             const int N) {
 
@@ -13,7 +14,7 @@ __global__ void shared_memory_reduce_kernel(float *d_in, float *d_out,
   const int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
   // Each thread carries one element from global memory to shared memory.
-  __shared__ float d_s[blockDim.x];
+  __shared__ float d_s[BLOCKSIZE];
   d_s[tid] = (idx < N) ? d_in[idx] : 0.0;
   __syncthreads();
 

@@ -46,7 +46,7 @@ void trigger_kernel_once(const std::string &kernel_to_run, const int n) {
   CUDA_CHECK(cudaMemcpy(d_out, h_out, size_out, cudaMemcpyHostToDevice));
 
   // Run kernel and copy result from d_C back to h_C.
-  bool valid_kernel = run_kernel(d_in, d_out, n, block_size, kernel_to_run);
+  bool valid_kernel = run_kernel(d_in, d_out, n, kernel_to_run);
   if (!valid_kernel)
     printf("Invalid kernel!\n");
   CUDA_CHECK(cudaGetLastError());
@@ -87,23 +87,22 @@ void run_tests(const std::vector<std::string> &kernels_to_run) {
     CUDA_CHECK(cudaMalloc(&d_in, size_in));
     CUDA_CHECK(cudaMalloc(&d_out, size_out));
 
-    // Initialize the input array and copy it to device.
+    // Initialize the input array and store the correct result of reduction to
+    // sum_ref.
     randomize_array(h_in, n);
-    CUDA_CHECK(cudaMemcpy(d_in, h_in, size_in, cudaMemcpyHostToDevice));
-
-    // Get correct result using cpu kernel and store it in sum_ref.
     double sum_ref = run_cpu_reduce(h_in, n);
 
     // Test each kernel.
     for (const std::string &kernel : kernels_to_run) {
       printf("\nKernel: %s\n", kernel.c_str());
 
-      // Clean the output array and copy it to device.
+      // Clean the output array, and copy arrays to Cuda device.
       zero_init_array(h_out, n_block);
+      CUDA_CHECK(cudaMemcpy(d_in, h_in, size_in, cudaMemcpyHostToDevice));
       CUDA_CHECK(cudaMemcpy(d_out, h_out, size_out, cudaMemcpyHostToDevice));
 
       // Check kernel validity.
-      bool valid_kernel = run_kernel(d_in, d_out, n, block_size, kernel);
+      bool valid_kernel = run_kernel(d_in, d_out, n, kernel);
       if (!valid_kernel)
         continue;
 
@@ -117,7 +116,7 @@ void run_tests(const std::vector<std::string> &kernels_to_run) {
         continue;
 
       // Check Performance.
-      check_performance(kernel, d_in, d_out, n, block_size, 10, 10);
+      check_performance(kernel, d_in, d_out, n, 10, 10);
     }
 
     // Free Memory.
