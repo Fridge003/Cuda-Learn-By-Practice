@@ -23,6 +23,12 @@ void run_baseline_reduce(float *d_in, float *d_out, int n, int block_size) {
   baseline_reduce_kernel<<<grid_size, block_size>>>(d_in, d_out, n);
 }
 
+void run_shared_memory_reduce(float *d_in, float *d_out, int n,
+                              int block_size) {
+  int grid_size = CEIL_DIV(n, block_size);
+  shared_memory_reduce_kernel<<<grid_size, block_size>>>(d_in, d_out, n);
+}
+
 bool run_kernel(float *d_in, float *d_out, int n, int block_size,
                 const std::string &kernel) {
 
@@ -30,6 +36,11 @@ bool run_kernel(float *d_in, float *d_out, int n, int block_size,
 
   if (kernel == "baseline") {
     run_baseline_reduce(d_in, d_out, n, block_size);
+    valid_kernel = true;
+  }
+
+  if (kernel == "shared_memory") {
+    run_shared_memory_reduce(d_in, d_out, n, block_size);
     valid_kernel = true;
   }
 

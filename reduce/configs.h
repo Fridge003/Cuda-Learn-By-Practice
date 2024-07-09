@@ -11,7 +11,8 @@ const int block_size = 256;
 const std::vector<int> n_list = {10000000};
 
 // List of kernels that have been implemented and are supposed to be tested.
-const std::vector<std::string> registered_kernel = {"baseline"};
+const std::vector<std::string> registered_kernel = {"baseline",
+                                                    "shared_memory"};
 
 // Bandwidth of different GPUs
 // const double device_global_mem_bandwidth_GB_per_sec = 900.0; // V100 PCIe
