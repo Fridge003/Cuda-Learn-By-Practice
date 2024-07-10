@@ -37,8 +37,18 @@ void run_multiple_add_reduce(float *d_in, float *d_out, int n) {
 }
 
 void run_warp_unrolling_reduce(float *d_in, float *d_out, int n) {
+  const int warp_size = 32;
+  assert(block_size >= warp_size);
   int grid_size = CEIL_DIV(n, (block_size * num_per_thread));
   warp_unrolling_reduce_kernel<block_size, num_per_thread>
+      <<<grid_size, block_size>>>(d_in, d_out, n);
+}
+
+void run_warp_shuffle_down_reduce(float *d_in, float *d_out, int n) {
+  const int warp_size = 32;
+  assert((block_size >= warp_size) && (block_size <= (warp_size * warp_size)));
+  int grid_size = CEIL_DIV(n, (block_size * num_per_thread));
+  warp_shuffle_down_reduce_kernel<block_size, num_per_thread>
       <<<grid_size, block_size>>>(d_in, d_out, n);
 }
 
@@ -63,6 +73,11 @@ bool run_kernel(float *d_in, float *d_out, int n, const std::string &kernel) {
 
   if (kernel == "warp_unrolling") {
     run_warp_unrolling_reduce(d_in, d_out, n);
+    valid_kernel = true;
+  }
+
+  if (kernel == "warp_shuffle_down") {
+    run_warp_shuffle_down_reduce(d_in, d_out, n);
     valid_kernel = true;
   }
 
