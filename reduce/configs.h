@@ -14,8 +14,8 @@ const int num_per_thread = 4;
 const std::vector<int> n_list = {100000000};
 
 // List of kernels that have been implemented and are supposed to be tested.
-const std::vector<std::string> registered_kernel = {"baseline", "shared_memory",
-                                                    "multiple_add"};
+const std::vector<std::string> registered_kernel = {
+    "baseline", "shared_memory", "multiple_add", "warp_unrolling"};
 
 // Bandwidth of different GPUs
 // const double device_global_mem_bandwidth_GB_per_sec = 900.0; // V100 PCIe

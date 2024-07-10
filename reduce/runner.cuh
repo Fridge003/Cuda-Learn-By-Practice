@@ -36,6 +36,12 @@ void run_multiple_add_reduce(float *d_in, float *d_out, int n) {
       <<<grid_size, block_size>>>(d_in, d_out, n);
 }
 
+void run_warp_unrolling_reduce(float *d_in, float *d_out, int n) {
+  int grid_size = CEIL_DIV(n, (block_size * num_per_thread));
+  warp_unrolling_reduce_kernel<block_size, num_per_thread>
+      <<<grid_size, block_size>>>(d_in, d_out, n);
+}
+
 bool run_kernel(float *d_in, float *d_out, int n, const std::string &kernel) {
 
   bool valid_kernel = false;
@@ -52,6 +58,11 @@ bool run_kernel(float *d_in, float *d_out, int n, const std::string &kernel) {
 
   if (kernel == "multiple_add") {
     run_multiple_add_reduce(d_in, d_out, n);
+    valid_kernel = true;
+  }
+
+  if (kernel == "warp_unrolling") {
+    run_warp_unrolling_reduce(d_in, d_out, n);
     valid_kernel = true;
   }
 
