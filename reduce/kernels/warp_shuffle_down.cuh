@@ -5,7 +5,7 @@
 
 #define WARPSIZE 32
 
-__device__ __forceinline__ float warpReduceSum(float sum, int thread_num) {
+__device__ __forceinline__ float warp_reduce(float sum, int thread_num) {
   if (thread_num >= 32)
     sum += __shfl_down_sync(0xffffffff, sum, 16);
   if (thread_num >= 16)
