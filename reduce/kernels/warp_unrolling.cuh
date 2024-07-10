@@ -21,8 +21,8 @@ __device__ void warp_reduce(volatile float *cache, int tid) {
 // So the thread synchronization can be avoided when working threads are in the
 // same warp.
 template <const int BLOCKSIZE, const int NUM_PER_THREAD>
-__global__ void multiple_add_reduce_kernel(float *d_in, float *d_out,
-                                           const int N) {
+__global__ void warp_unrolling_reduce_kernel(float *d_in, float *d_out,
+                                             const int N) {
   __shared__ float d_s[BLOCKSIZE];
 
   const int tid = threadIdx.x;
