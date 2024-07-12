@@ -8,7 +8,7 @@ import pandas as pd
 import argparse
 
 matplotlib.style.use("fivethirtyeight")
-matplotlib.style.use("seaborn")
+matplotlib.style.use("seaborn-v0_8-talk")
 matplotlib.rcParams["font.family"] = "monospace"
 matplotlib.rcParams["figure.dpi"] = 200
 plt.rcParams["savefig.facecolor"] = "white"

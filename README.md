@@ -67,7 +67,7 @@ DEVICE=[device_id] ./gemm > result.log
 Then move to the root directory of repository, execute
 ```bash
 pip install -r requirements.txt
-python plot_results.py --log_path ./build/result.log --plot_path [OUTPUT_DIRECTORY]/benchmark_result.png
+python gemm/plot_results.py --log_path ./build/result.log --plot_path [OUTPUT_DIRECTORY]/benchmark_result.png
 ```
 
 Then the plot should appear at the given output path.
