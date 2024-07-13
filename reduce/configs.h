@@ -11,7 +11,8 @@ const int block_size = 256;
 const int num_per_thread = 4;
 
 // List of n(length of reduced array) to be tested.
-const std::vector<int> n_list = {1000000, 10000000, 100000000};
+const std::vector<int> n_list = {1000000, 5000000, 10000000, 50000000,
+                                 100000000};
 
 // List of kernels that have been implemented and are supposed to be tested.
 const std::vector<std::string> registered_kernel = {

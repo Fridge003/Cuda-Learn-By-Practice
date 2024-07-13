@@ -101,7 +101,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--plot_path",
-        default="./benchmark_results.png",
+        default="./benchmark_result.png",
         help="The path to the output plot",
     )
     args = parser.parse_args()
