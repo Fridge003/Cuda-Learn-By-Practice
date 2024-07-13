@@ -1,93 +1,154 @@
 ## Introduction
 
-When I was self-learning CUDA programming, I found that it is necessary to work under an environment that manages and compiles the kernels in an efficient way. So I built up this repository under the inspiration of several other repositories on github, especially [SGEMM_CUDA](https://github.com/siboehm/SGEMM_CUDA).
+When I was self-learning CUDA programming, I found that it is necessary to work under an environment that manages and compiles the kernels efficiently. So I built up this repository under the inspiration of several other repositories on github, especially [SGEMM_CUDA](https://github.com/siboehm/SGEMM_CUDA).
 
-## Compile
+
+## Usage
+
+To efficiently develop, test and benchmark kernerls over different tasks, the project contains multiple similar folders under the root directory, each corresponding to a computational task (gemm, reduce, etc..).
+
+The usage of API is common between these tasks, so in the following sections, `task` will refer to any task implemented in this project. To explain the usage clearly, the GEMM example is also displayed for each API.
+
+Currently implemented tasks include [`gemm`, `reduce`], and `task` should be one of them.
+
+### Compile
 
 To compile, run the following commands:
 ```bash
 mkdir build
 cd build
 cmake ..
-make [task_name]
+make [task]
 ```
 
-Here the argument `task_name` refers to the task to run on. For example, if you want to generate kernels on GEMM matrix multiplication, then execute
+#### Example
+If you want to generate kernels on GEMM matrix multiplication, then run
 ```bash
 make gemm
 ```
-during making.
-
-Currently implemented tasks include [`gemm`], and `task_name` should be one of them.
-
-## Usage of GEMM Kernels
+to generate an executable file `gemm` that contains all the compiled GEMM Cuda kernels.
 
 ### List valid kernels
 
 To display the list of all valid kernels along with their ids:
 ```bash
-./gemm --list-kernels
+./[task] --list-kernels
 ```
 
-Valid kernels should be registered in the list `registered_kernel` in `gemm/config.h`.
+Valid kernels should be registered in the list `registered_kernel` of `/config.h` under the task folder.
 
+#### Example
+To list all the implemented GEMM kernels, run
+```bash
+./gemm --list-kernels
+```
+The output looks like
+```bash
+Kernel 0: cublas
+Kernel 1: naive
+Kernel 2: global_memory_coalescing
+Kernel 3: shared_memory_cache_blocking
+Kernel 4: 1D_block_tiling
+Kernel 5: 2D_block_tiling
+Kernel 6: vectorized_2D_block_tiling
+Kernel 7: double_buffering
+Kernel 8: bank_conflict_avoiding
+Kernel 9: warp_tiling
+```
 
 ### Test correctness and performance of kernel(s)
 
-In this code repository, we provide features for testing the correctness and performance(latency) of the implemented matrix kernels. These tests need to trigger the kernel for multiple times.
+In this code repository, we provide feature for testing the correctness and performance(latency) for all tasks.
 
-To do these tests, just following the steps below:
+The correctness check will compare the output of written kernel against the correct result obtained from naive method. Only after passing the correctness check, the performance check will profile the latency and related metric (GFLOPS for compute-bound kernel/bandwitdth for IO-bound kernel) through triggering the kernel for multiple times.
 
-First set the sizes of matrices A, B, C in variable `mnk_list` of file `./gemm/config.h`, and compile again. `mnk_list` records all the sets of sizes you want to test.
+To do the tests, first set the input sizes in file `[task]/config.h`, and compile again.
 
 Then, dependent on whether you want to test the correctness and performance on all kernels or one of them:
 
-To run tests on all GEMM kernels, execute
+To run tests on all implemented kernels, execute
 
 ```bash
-DEVICE=[device_id] ./gemm
+DEVICE=[device_id] ./[task]
 ```
 Here the device_id of gpu is 0 by default.
 
 To run tests on one specific kerenel, execute
 ```bash
+DEVICE=[device_id] ./[task] [kernel_idx]
+```
+Here the kernel_idx should be valid. The idx of each kernel can be looked through `--list-kernels` flag.
+
+
+#### Example
+
+To test on GEMM kernels, first modify the `mnk_list` variable under `gemm/config.h`. `mnk_list` contains the sizes of tested matrices. Then do the compilation.
+
+If all GEMM kernels are tested, execute
+```bash
+DEVICE=[device_id] ./gemm
+```
+
+If a specific GEMM kerenel is tested, execute
+```bash
 DEVICE=[device_id] ./gemm [kernel_idx]
 ```
-Here the kernel_idx should be valid.
 
+### Trigger kernel once without testing
+
+Sometimes we only want to trigger a kernel once. In such cases, you can trigger the kernel once through sending a `--once` flag and the sizes of inputs:
+```bash
+DEVICE=[device_id] ./[task] --once [kernel_idx] [Input Size Arguments]
+```
+
+The number of arguments for input sizes might vary in different tasks. In gemm task, three arguments are needed to describe the sizes of input matrices: `M`, `N`, `K`. However in reduce task, only the length `N` of input array is needed.
+
+#### Example
+
+Trigger a GEMM kernel once:
+```bash
+DEVICE=[device_id] ./gemm --once [kernel_idx] [M] [N] [K]
+```
+
+When using nsight compute to profile a kernel, just run following command:
+```bash
+DEVICE=[device_id] ncu -o profile ./gemm --once [kernel_idx] [M] [N] [K]
+```
 
 ### Plot the profiling results of all kernels:
 
 First move into the build directory, and run profiling on all kernels:
 ```bash
 cd ./build
-DEVICE=[device_id] ./gemm > result.log
+DEVICE=[device_id] ./[task] > result.log
 ```
 
 Then move to the root directory of repository, execute
 ```bash
 pip install -r requirements.txt
-python gemm/plot_results.py --log_path ./build/result.log --plot_path [OUTPUT_DIRECTORY]/benchmark_result.png
+python [task]/plot_results.py --log_path ./build/result.log --plot_path [OUTPUT_DIRECTORY]/benchmark_result.png
 ```
 
 Then the plot should appear at the given output path.
 
+#### Example
 
-### Trigger kernel once without testing
+After moving to the root directory of repo, the following script first profiles all the GEMM kernels, and then plots the result as file `benchmark_result.png` under current folder.
 
-Sometimes we only want to trigger a kernel once. In such cases, you can trigger the kernel once through sending a flag and the sizes of matrices:
 ```bash
-DEVICE=[device_id] ./gemm --once [kernel_idx] [M] [N] [K]
+cd ./build
+DEVICE=0 ./gemm > result.log
+cd ..
+pip install -r requirements.txt
+python gemm/plot_results.py --log_path ./build/result.log --plot_path ./benchmark_result.png
 ```
 
-For example, when using nsight compute to profile a kernel, just use following command:
-```bash
-DEVICE=[device_id] ncu -o profile ./gemm --once [kernel_idx] [M] [N] [K]
-```
 
 ### Add a new kernel
 
-This framework supports flexible addition of newly implemented GEMM kernels. Suppose the name of new kernel is `kenrel_x`, and the cuda header file containing the implementation is `kernel_x.cuh`.
+This framework supports flexible addition of newly implemented kernels. Here we focus on the addtion of new GEMM kernels.
+
+Suppose the name of new kernel is `kenrel_x`, and the cuda header file containing the implementation is `kernel_x.cuh`.
 
 Step 1: Put the `kernel_x.cuh` under the folder `gemm/kernels`.
 
@@ -109,14 +170,12 @@ bool run_kernel(...) {
 
 Step 5: In `gemm/configs.h`, register the new kernel through appending "kernel_x" to the list `registered_kernel`.
 
+Now you can trigger the kernel through the methods described above.
 
-Now you can trigger the kernel through either way described above.
-
-
+For other tasks, the method of adding kernel is similar since the folder structure is the same.
 
 
 ## Benchmark
-
 
 ### GEMM
 
@@ -141,6 +200,27 @@ The following are each kernel's performance of running 4096x4096 GEMM on Nvidia 
 | 9 | Warp Tiling                      | `12498.6` | 96.89%                         |
 | 0 | cuBLAS                           | `12899.8` | 100.00%                        |
 <!-- benchmark_results -->
+
+### Reduce
+
+Results of running reduction kernels on different input array lengths (from 1e6 to 1e8) on NVIDIA Tesla V100-PCIE-32GB:
+
+<!-- benchmark_plot -->
+![](./reduce/benchmark_result.png)
+<!-- benchmark_plot -->
+
+The following are each kernel's performance of reducing 1e8 length array on Nvidia Tesla V100-PCIE-32GB with 1134 GB/s bandwidth:
+
+<!-- benchmark_results -->
+|Idx| Kernel                           |  Bandwidth(GB/s) | Utility of Bandwidth           |
+|:--|----------------------------------|-----------------:|:-------------------------------|
+| 0 | Baseline                         |  `300.0`         | 26.46%                         |
+| 1 | Shared Memory                    |  `347.5`         | 30.64%                         |
+| 2 | Multiple Add                     |  `967.29`        | 85.30%                         |
+| 3 | Warp Unrolling                   |  `974.55`        | 85.94%                         |
+| 4 | Warp Shuffle Down                |  `977.69`        | 86.22%                         |
+<!-- benchmark_results -->
+
 
 ## Reference
 
